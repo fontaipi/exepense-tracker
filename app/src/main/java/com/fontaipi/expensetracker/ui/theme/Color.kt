@@ -15,3 +15,5 @@ val CategoryGreen = Color(0xFF539A92)
 val CategoryOrange = Color(0xFFFF9A6E)
 val CategoryRed = Color(0xFFE0908F)
 val CategoryPurple = Color(0xFF8C7BFD)
+val CategoryYellow = Color(0xFFF0C671)
+

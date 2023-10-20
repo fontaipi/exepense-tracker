@@ -32,7 +32,6 @@ import com.fontaipi.expensetracker.ui.component.TopAppBar
 import com.fontaipi.expensetracker.ui.component.animatedComposable
 import com.fontaipi.expensetracker.ui.component.slideInVerticallyComposable
 import com.fontaipi.expensetracker.ui.page.home.AddTransactionRoute
-import com.fontaipi.expensetracker.ui.page.home.AddTransactionScreen
 import com.fontaipi.expensetracker.ui.page.home.HomeRoute
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,7 +67,6 @@ fun ExpenseTrackerApp() {
                         onActionClick = {
                         }
                     )
-                    //}
                 },
                 floatingActionButton = {
                     scaffoldViewState.onFabClick?.let { action ->

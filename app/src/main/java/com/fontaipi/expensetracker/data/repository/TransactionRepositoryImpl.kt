@@ -1,11 +1,9 @@
-package com.fontaipi.expensetracker.data.transaction
+package com.fontaipi.expensetracker.data.repository
 
-import android.util.Log
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ShoppingCart
+import com.fontaipi.expensetracker.model.Category
+import com.fontaipi.expensetracker.model.CategoryIcon
 import com.fontaipi.expensetracker.model.Transaction
 import com.fontaipi.expensetracker.ui.page.home.Account
-import com.fontaipi.expensetracker.ui.page.home.TransactionCategory
 import com.fontaipi.expensetracker.ui.page.home.TransactionType
 import com.fontaipi.expensetracker.ui.theme.CategoryBlue
 import kotlinx.coroutines.delay
@@ -22,10 +20,10 @@ val sampleMainAccount = Account(
 
 val transactions = mutableListOf(
     Transaction(
-        category = TransactionCategory(
+        category = Category(
             name = "Groceries",
             color = CategoryBlue,
-            icon = Icons.Outlined.ShoppingCart,
+            icon = CategoryIcon.SHOPPING,
         ),
         hashtags = setOf("starbucks", "flatwhite"),
         price = BigDecimal("3.50"),

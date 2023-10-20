@@ -1,4 +1,4 @@
-package com.fontaipi.expensetracker.data.transaction
+package com.fontaipi.expensetracker.data.repository
 
 import com.fontaipi.expensetracker.model.Transaction
 import kotlinx.coroutines.flow.Flow

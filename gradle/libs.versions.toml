@@ -1,6 +1,7 @@
 [versions]
 agp = "8.3.0-alpha07"
 kotlin = "1.9.10"
+ksp = "1.9.10-1.0.13"
 core-ktx = "1.12.0"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.1.5"
@@ -14,6 +15,7 @@ hilt-navigation-compose = "1.0.0"
 lifecycle-runtime-compose = "2.6.2"
 dagger-hilt = "2.48.1"
 material3 = "1.2.0-alpha09"
+room = "2.6.0"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -35,6 +37,9 @@ androidx-navigation-common-ktx = { group = "androidx.navigation", name = "naviga
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle-runtime-compose" }
 androidx-hilt-navigation = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 dagger-hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "dagger-hilt" }
 dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "dagger-hilt" }
 
@@ -42,4 +47,5 @@ dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compi
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "dagger-hilt" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 

@@ -1,12 +1,10 @@
 package com.fontaipi.expensetracker
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.DonutSmall
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Savings
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.rounded.Analytics
 import androidx.compose.material.icons.rounded.DonutSmall
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Savings

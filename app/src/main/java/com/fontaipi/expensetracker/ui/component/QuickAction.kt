@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fontaipi.expensetracker.model.Category
 import com.fontaipi.expensetracker.ui.page.home.TransactionCategory
 import com.fontaipi.expensetracker.ui.page.home.sampleCategories
 import com.fontaipi.expensetracker.ui.theme.CategoryBlue
@@ -97,7 +98,7 @@ fun MyWallet() {
 }
 
 data class TransactionsPerCategory(
-    val category: TransactionCategory,
+    val category: Category,
     val amount: BigDecimal,
 )
 

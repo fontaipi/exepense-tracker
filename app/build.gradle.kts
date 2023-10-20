@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.hilt)
-    kotlin("kapt")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -77,9 +77,11 @@ dependencies {
     // Dagger - Hilt
     implementation(libs.dagger.hilt)
     implementation(libs.androidx.hilt.navigation)
-    kapt(libs.dagger.hilt.compiler)
-}
+    ksp(libs.dagger.hilt.compiler)
 
-kapt {
-    correctErrorTypes = true
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    annotationProcessor(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 }

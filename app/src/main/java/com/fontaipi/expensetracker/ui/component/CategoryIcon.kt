@@ -11,12 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.fontaipi.expensetracker.ui.page.home.TransactionCategory
+import com.fontaipi.expensetracker.model.Category
+import com.fontaipi.expensetracker.model.categoryIconMap
 
 @Composable
 fun CategoryBox(
     modifier: Modifier = Modifier,
-    category: TransactionCategory,
+    category: Category,
 ) {
     Box(
         modifier = modifier
@@ -25,12 +26,14 @@ fun CategoryBox(
             .background(category.color),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = category.icon,
-            contentDescription = null,
-            modifier = Modifier.size(18.dp),
-            tint = Color.White,
-        )
+        categoryIconMap[category.icon]?.let {
+            Icon(
+                imageVector = it,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = Color.White,
+            )
+        }
     }
 }
 

@@ -23,14 +23,10 @@ import androidx.compose.material.icons.automirrored.filled.CallMade
 import androidx.compose.material.icons.automirrored.filled.CallReceived
 import androidx.compose.material.icons.automirrored.rounded.CompareArrows
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.ShoppingBag
-import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material.icons.outlined.Train
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -53,6 +49,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -63,7 +60,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
@@ -76,7 +72,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.fontaipi.expensetracker.data.transaction.sampleMainAccount
+import com.fontaipi.expensetracker.data.repository.sampleMainAccount
+import com.fontaipi.expensetracker.model.Category
+import com.fontaipi.expensetracker.model.CategoryIcon
 import com.fontaipi.expensetracker.model.Transaction
 import com.fontaipi.expensetracker.ui.component.CategoryBox
 import com.fontaipi.expensetracker.ui.component.SectionTitle
@@ -91,20 +89,20 @@ import java.util.Date
 import java.util.Locale
 
 val sampleCategories = listOf(
-    TransactionCategory(
+    Category(
         name = "Groceries",
         color = CategoryBlue,
-        icon = Icons.Outlined.ShoppingCart,
+        icon = CategoryIcon.GROCERIES,
     ),
-    TransactionCategory(
+    Category(
         name = "Shopping",
         color = CategoryGreen,
-        icon = Icons.Outlined.ShoppingBag,
+        icon = CategoryIcon.SHOPPING,
     ),
-    TransactionCategory(
+    Category(
         name = "Transportation",
         color = CategoryRed,
-        icon = Icons.Outlined.Train,
+        icon = CategoryIcon.TRANSPORT,
     ),
 )
 
@@ -132,7 +130,9 @@ fun AddTransactionRoute(
     viewModel: AddTransactionViewModel = hiltViewModel(),
     onCloseClick: () -> Unit,
 ) {
+    val categories by viewModel.categoriesState.collectAsState()
     AddTransactionScreen(
+        categories = categories,
         addTransaction = viewModel::addTransaction,
         onCloseClick = onCloseClick,
     )
@@ -141,6 +141,7 @@ fun AddTransactionRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
+    categories: List<Category> = emptyList(),
     addTransaction: (Transaction) -> Unit,
     onCloseClick: () -> Unit,
 ) {
@@ -213,6 +214,7 @@ fun AddTransactionScreen(
             }
             when (selectedTabIndex) {
                 0 -> Expense(
+                    categories = categories,
                     addTransaction = addTransaction,
                     onCloseClick = onCloseClick
                 )
@@ -221,8 +223,6 @@ fun AddTransactionScreen(
                 2 -> Text("Transfer")
                 4 -> Text("Debt")
             }
-
-
         }
     }
 }
@@ -230,6 +230,7 @@ fun AddTransactionScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Expense(
+    categories: List<Category>,
     addTransaction: (Transaction) -> Unit,
     onCloseClick: () -> Unit
 ) {
@@ -237,7 +238,7 @@ fun Expense(
     var showDatePicker by remember { mutableStateOf(false) }
 
     var amount by remember { mutableStateOf("") }
-    var selectedCategoryId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var selectedCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
     val datePickerState =
         rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
     var isRepeatPayment by remember { mutableStateOf(false) }
@@ -324,7 +325,7 @@ fun Expense(
                             )
                         } else {
                             CategoryBox(
-                                category = sampleCategories[selectedCategoryId!!],
+                                category = categories.first { it.id == selectedCategoryId },
                                 modifier = Modifier.size(36.dp)
                             )
                         }
@@ -419,7 +420,7 @@ fun Expense(
                     Transaction(
                         price = amount.toBigDecimal(),
                         type = TransactionType.EXPENSE,
-                        category = sampleCategories[selectedCategoryId!!],
+                        category = categories.first { it.id == selectedCategoryId },
                         account = sampleMainAccount,
                         hashtags = emptySet(),
                         date = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
@@ -438,6 +439,7 @@ fun Expense(
 
     if (showCategoryBottomSheet) {
         SelectCategoryBottomSheet(
+            categories = categories,
             onCategoryClick = { selectedCategoryId = it },
             onDismissRequest = {
                 showCategoryBottomSheet = false
@@ -479,8 +481,9 @@ fun Expense(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectCategoryBottomSheet(
+    categories: List<Category>,
     onDismissRequest: () -> Unit,
-    onCategoryClick: (Int) -> Unit,
+    onCategoryClick: (Long) -> Unit,
 ) {
     val bottomSheetState = rememberModalBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
@@ -506,12 +509,12 @@ fun SelectCategoryBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(sampleCategories) {
+                items(categories) {
                     CategoryCard(
                         category = it,
-                        onClick = { categoryId ->
+                        onClick = {
                             coroutineScope.launch { bottomSheetState.hide() }
-                            onCategoryClick(categoryId)
+                            onCategoryClick(it.id)
                             onDismissRequest()
                         }
                     )
@@ -524,12 +527,12 @@ fun SelectCategoryBottomSheet(
 
 @Composable
 fun CategoryCard(
-    category: TransactionCategory,
-    onClick: (Int) -> Unit,
+    category: Category,
+    onClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
-            .clickable(onClick = { onClick(sampleCategories.indexOf(category)) })
+            .clickable(onClick = onClick)
             .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)

@@ -11,34 +11,30 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fontaipi.expensetracker.model.Category
+import com.fontaipi.expensetracker.model.CategoryIcon
 import com.fontaipi.expensetracker.ui.page.home.Account
-import com.fontaipi.expensetracker.ui.page.home.TransactionCategory
 import com.fontaipi.expensetracker.ui.theme.CategoryRed
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionCard(
-    category: TransactionCategory = TransactionCategory(
+    category: Category = Category(
         name = "Groceries",
         color = CategoryRed,
-        icon = Icons.Filled.ShoppingCart,
+        icon = CategoryIcon.GROCERIES,
     ),
     hashtags: Set<String> = setOf("starbucks", "flatwhite"),
     price: String = "3,50€",
