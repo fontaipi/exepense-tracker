@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.fontaipi.expensetracker.data.database.ExpenseTrackerDatabase
 import com.fontaipi.expensetracker.data.database.dao.AccountDao
 import com.fontaipi.expensetracker.data.database.dao.CategoryDao
+import com.fontaipi.expensetracker.data.database.dao.TransactionDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,4 +36,9 @@ class DatabaseModule {
     fun providesCategoryDao(
         database: ExpenseTrackerDatabase,
     ): CategoryDao = database.categoryDao()
+
+    @Provides
+    fun providesTransactionDao(
+        database: ExpenseTrackerDatabase,
+    ): TransactionDao = database.transactionDao()
 }

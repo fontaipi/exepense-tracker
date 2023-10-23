@@ -24,7 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.CallReceived
 import androidx.compose.material.icons.automirrored.rounded.CompareArrows
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.RestartAlt
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -72,19 +72,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.fontaipi.expensetracker.data.repository.sampleMainAccount
+import com.fontaipi.expensetracker.data.database.entity.TransactionEntity
+import com.fontaipi.expensetracker.model.Account
 import com.fontaipi.expensetracker.model.Category
 import com.fontaipi.expensetracker.model.CategoryIcon
-import com.fontaipi.expensetracker.model.Transaction
 import com.fontaipi.expensetracker.ui.component.CategoryBox
 import com.fontaipi.expensetracker.ui.component.SectionTitle
 import com.fontaipi.expensetracker.ui.component.WalletIcon
 import com.fontaipi.expensetracker.ui.theme.CategoryBlue
 import com.fontaipi.expensetracker.ui.theme.CategoryGreen
-import com.fontaipi.expensetracker.ui.theme.CategoryPurple
 import com.fontaipi.expensetracker.ui.theme.CategoryRed
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.util.Date
 import java.util.Locale
 
@@ -119,30 +119,32 @@ enum class TransactionType(val title: String, val icon: ImageVector) {
         icon = Icons.AutoMirrored.Rounded.CompareArrows,
         title = "Transfer"
     ),
-    DEBT(
-        icon = Icons.Rounded.RestartAlt,
-        title = "Debt"
-    ),
+//    DEBT(
+//        icon = Icons.Rounded.RestartAlt,
+//        title = "Debt"
+//    ),
 }
+
 
 @Composable
 fun AddTransactionRoute(
     viewModel: AddTransactionViewModel = hiltViewModel(),
     onCloseClick: () -> Unit,
 ) {
-    val categories by viewModel.categoriesState.collectAsState()
+    val addTransactionState by viewModel.addTransactionState.collectAsState()
     AddTransactionScreen(
-        categories = categories,
+        addTransactionState = addTransactionState,
         addTransaction = viewModel::addTransaction,
         onCloseClick = onCloseClick,
     )
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
-    categories: List<Category> = emptyList(),
-    addTransaction: (Transaction) -> Unit,
+    addTransactionState: AddTransactionState,
+    addTransaction: (TransactionEntity) -> Unit,
     onCloseClick: () -> Unit,
 ) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -212,16 +214,30 @@ fun AddTransactionScreen(
                     )
                 }
             }
-            when (selectedTabIndex) {
-                0 -> Expense(
-                    categories = categories,
-                    addTransaction = addTransaction,
-                    onCloseClick = onCloseClick
-                )
 
-                1 -> Text("Income")
-                2 -> Text("Transfer")
-                4 -> Text("Debt")
+            when (addTransactionState) {
+                is AddTransactionState.Success -> {
+                    when (selectedTabIndex) {
+                        0 -> Expense(
+                            accounts = addTransactionState.accounts,
+                            categories = addTransactionState.categories,
+                            addTransaction = addTransaction,
+                            onCloseClick = onCloseClick
+                        )
+
+                        1 -> Text("Income")
+                        2 -> Text("Transfer")
+                    }
+                }
+
+                is AddTransactionState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
             }
         }
     }
@@ -230,15 +246,20 @@ fun AddTransactionScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Expense(
+    accounts: List<Account>,
     categories: List<Category>,
-    addTransaction: (Transaction) -> Unit,
+    addTransaction: (TransactionEntity) -> Unit,
     onCloseClick: () -> Unit
 ) {
     var showCategoryBottomSheet by remember { mutableStateOf(false) }
+    var showAccountBottomSheet by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
 
     var amount by remember { mutableStateOf("") }
     var selectedCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var selectedAccountId by rememberSaveable { mutableStateOf(accounts.firstOrNull()?.id) }
+    val selectedAccount by remember { derivedStateOf { accounts.firstOrNull { it.id == selectedAccountId } } }
+
     val datePickerState =
         rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
     var isRepeatPayment by remember { mutableStateOf(false) }
@@ -306,6 +327,7 @@ fun Expense(
                             style = MaterialTheme.typography.titleMedium.copy(lineHeight = 18.sp),
                             modifier = Modifier.weight(1f)
                         )
+                        Spacer(modifier = Modifier.width(4.dp))
                         if (selectedCategoryId == null) {
                             val stroke = Stroke(
                                 width = 4f,
@@ -343,23 +365,25 @@ fun Expense(
                 modifier = Modifier
                     .weight(1f)
                     .height(96.dp),
-                onClick = {},
+                onClick = { showAccountBottomSheet = true },
                 shape = MaterialTheme.shapes.small,
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp),
-                    verticalArrangement = Arrangement.SpaceBetween
+                    verticalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Row {
                         Text(
-                            "Saving account",
+                            selectedAccount?.name ?: "Choose wallet",
                             style = MaterialTheme.typography.titleMedium.copy(lineHeight = 18.sp),
                             modifier = Modifier.weight(1f)
                         )
-                        WalletIcon(
-                            primaryColor = CategoryPurple,
-                            secondaryColor = CategoryBlue,
-                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        if (selectedAccount != null) {
+                            WalletIcon(
+                                accountColors = selectedAccount!!.colors,
+                            )
+                        }
                     }
                     Text(
                         "Tap to select",
@@ -414,16 +438,18 @@ fun Expense(
 
         }
         FilledTonalButton(
-            enabled = amount.isNotEmpty() && selectedCategoryId != null,
+            enabled = amount.isNotEmpty() && selectedCategoryId != null && selectedAccountId != null,
             onClick = {
                 addTransaction(
-                    Transaction(
-                        price = amount.toBigDecimal(),
+                    TransactionEntity(
+                        amount = amount.toFloat().toBigDecimal(),
                         type = TransactionType.EXPENSE,
-                        category = categories.first { it.id == selectedCategoryId },
-                        account = sampleMainAccount,
-                        hashtags = emptySet(),
-                        date = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+                        categoryId = selectedCategoryId!!,
+                        accountId = selectedAccountId!!,
+                        //hashtags = emptySet(),
+                        date = if (datePickerState.selectedDateMillis != null) Instant.ofEpochMilli(
+                            datePickerState.selectedDateMillis!!
+                        ) else Instant.now()
                     )
                 )
                 onCloseClick()
@@ -443,6 +469,16 @@ fun Expense(
             onCategoryClick = { selectedCategoryId = it },
             onDismissRequest = {
                 showCategoryBottomSheet = false
+            }
+        )
+    }
+
+    if (showAccountBottomSheet) {
+        SelectAccountBottomSheet(
+            accounts = accounts,
+            onCategoryClick = { selectedAccountId = it },
+            onDismissRequest = {
+                showAccountBottomSheet = false
             }
         )
     }
@@ -525,6 +561,53 @@ fun SelectCategoryBottomSheet(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SelectAccountBottomSheet(
+    accounts: List<Account>,
+    onDismissRequest: () -> Unit,
+    onCategoryClick: (Long) -> Unit,
+) {
+    val bottomSheetState = rememberModalBottomSheetState()
+    val coroutineScope = rememberCoroutineScope()
+    ModalBottomSheet(
+        sheetState = bottomSheetState,
+        onDismissRequest = {
+            coroutineScope.launch { bottomSheetState.hide() }
+            onDismissRequest()
+        },
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Choose wallet",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(accounts) {
+                    AccountCard(
+                        account = it,
+                        onClick = {
+                            coroutineScope.launch { bottomSheetState.hide() }
+                            onCategoryClick(it.id)
+                            onDismissRequest()
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
 @Composable
 fun CategoryCard(
     category: Category,
@@ -540,6 +623,28 @@ fun CategoryCard(
         CategoryBox(category = category)
         Text(
             text = category.name,
+            style = MaterialTheme.typography.labelLarge,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun AccountCard(
+    account: Account,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        WalletIcon(accountColors = account.colors)
+        Text(
+            text = account.name,
             style = MaterialTheme.typography.labelLarge,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

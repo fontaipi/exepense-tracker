@@ -22,11 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fontaipi.expensetracker.data.database.entity.AccountColors
+import com.fontaipi.expensetracker.model.Account
 import com.fontaipi.expensetracker.model.Category
 import com.fontaipi.expensetracker.model.CategoryIcon
-import com.fontaipi.expensetracker.ui.page.home.Account
 import com.fontaipi.expensetracker.ui.theme.CategoryRed
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
+import java.math.BigDecimal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +40,11 @@ fun TransactionCard(
     ),
     hashtags: Set<String> = setOf("starbucks", "flatwhite"),
     price: String = "3,50€",
-    account: Account = Account("Main account", MaterialTheme.colorScheme.primary),
+    account: Account = Account(
+        name = "Main account",
+        balance = BigDecimal(100),
+        colors = AccountColors.Type1
+    ),
 ) {
     Card(
         onClick = { },
@@ -96,7 +102,7 @@ fun TransactionCard(
                         modifier = Modifier
                             .size(12.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .background(account.color)
+                            .background(account.colors.primary)
                     )
                 }
             }

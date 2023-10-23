@@ -1,22 +1,25 @@
 package com.fontaipi.expensetracker.ui.page.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,17 +35,6 @@ import com.fontaipi.expensetracker.ui.component.Subscriptions
 import com.fontaipi.expensetracker.ui.component.TopCategories
 import com.fontaipi.expensetracker.ui.component.TransactionCard
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
-
-data class Account(
-    val name: String,
-    val color: Color,
-)
-
-data class TransactionCategory(
-    val name: String,
-    val color: Color,
-    val icon: ImageVector
-)
 
 data class Stock(
     val ticker: String,
@@ -77,21 +69,28 @@ fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
     updateScaffoldViewState: (ScaffoldViewState) -> Unit,
     navigateToAddTransaction: () -> Unit,
+    navigateToWallets: () -> Unit,
 ) {
-    val transactions by viewModel.transactions.collectAsStateWithLifecycle()
+    val homePageState by viewModel.homePageState.collectAsStateWithLifecycle()
+    val transactionsState by viewModel.transactionState.collectAsStateWithLifecycle()
     HomeScreen(
+        homePageState = homePageState,
+        transactionsState = transactionsState,
         updateScaffoldViewState = updateScaffoldViewState,
         navigateToAddTransaction = navigateToAddTransaction,
-        transactions = transactions,
+        navigateToWallets = navigateToWallets,
     )
 }
 
 @Composable
 fun HomeScreen(
+    homePageState: HomePageState,
+    transactionsState: TransactionsState,
     updateScaffoldViewState: (ScaffoldViewState) -> Unit,
     navigateToAddTransaction: () -> Unit,
-    transactions: List<Transaction>,
+    navigateToWallets: () -> Unit,
 ) {
+    val scrollingState = rememberScrollState()
     LaunchedEffect(Unit) {
         updateScaffoldViewState(
             ScaffoldViewState(
@@ -100,56 +99,87 @@ fun HomeScreen(
         )
     }
 
-    // get context in compose
-    val context = LocalContext.current
-    context.resources.getIdentifier("myIconName", "drawable", context.packageName)
-
-    LazyColumn(
+    Column(
+        modifier = Modifier
+            .verticalScroll(scrollingState)
+            .padding(top = 16.dp, bottom = 82.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 82.dp),
     ) {
+        when (homePageState) {
+            is HomePageState.Success -> {
+                LazyVerticalStaggeredGrid(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .height(320.dp),
+                    verticalItemSpacing = 16.dp,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    columns = StaggeredGridCells.Fixed(2),
+                ) {
+                    item {
+                        MyWallet(
+                            accounts = homePageState.accounts,
+                            onClick = navigateToWallets
+                        )
+                    }
+                    item {
+                        AllTransactions(categoryTotalTransactions = homePageState.categoryTotalTransaction)
+                    }
+                    item {
+                        Debts()
+                    }
+                    item {
+                        TopCategories(transactionsPerCategories = homePageState.categoryTotalTransaction)
+                    }
+                    item {
+                        Subscriptions()
+                    }
+                }
+            }
 
-        item {
-            LazyVerticalStaggeredGrid(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .height(320.dp),
-                verticalItemSpacing = 16.dp,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                columns = StaggeredGridCells.Fixed(2),
-            ) {
-                item {
-                    MyWallet()
-                }
-                item {
-                    AllTransactions()
-                }
-                item {
-                    Debts()
-                }
-                item {
-                    TopCategories()
-                }
-                item {
-                    Subscriptions()
+            HomePageState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(320.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
             }
         }
 
-
-        item {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                StockWatchlist()
+                SectionTitleWithButton(
+                    title = "Transactions",
+                    buttonText = "See all",
+                    onButtonClick = {})
+                when (transactionsState) {
+                    is TransactionsState.Success -> {
+                        Transactions(
+                            transactions = transactionsState.transactions
+                        )
+                    }
 
-                Transactions(
-                    transactions = transactions
-                )
+                    TransactionsState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun StockWatchlist() {
@@ -180,29 +210,25 @@ fun StockWatchlist() {
 fun Transactions(
     transactions: List<Transaction>
 ) {
+
     Column(
-        modifier = Modifier.padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        SectionTitleWithButton(title = "Transactions", buttonText = "See all", onButtonClick = {})
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            transactions.forEach { transaction ->
-                val sign = when (transaction.type) {
-                    TransactionType.EXPENSE -> "-"
-                    TransactionType.INCOME -> "+"
-                    else -> ""
-                }
-                TransactionCard(
-                    category = transaction.category,
-                    hashtags = transaction.hashtags,
-                    price = "$sign ${transaction.price}€",
-                    account = transaction.account,
-                )
+        transactions.forEach { transaction ->
+            val sign = when (transaction.type) {
+                TransactionType.EXPENSE -> "-"
+                TransactionType.INCOME -> "+"
+                else -> ""
             }
+            TransactionCard(
+                category = transaction.category,
+                hashtags = transaction.hashtags,
+                price = "$sign ${transaction.amount}€",
+                account = transaction.account,
+            )
         }
     }
+
 }
 
 @Preview

@@ -1,5 +1,7 @@
 package com.fontaipi.expensetracker.data.di
 
+import com.fontaipi.expensetracker.data.repository.AccountRepository
+import com.fontaipi.expensetracker.data.repository.AccountRepositoryImpl
 import com.fontaipi.expensetracker.data.repository.CategoryRepository
 import com.fontaipi.expensetracker.data.repository.CategoryRepositoryImpl
 import com.fontaipi.expensetracker.data.repository.TransactionRepository
@@ -12,6 +14,11 @@ import dagger.hilt.components.SingletonComponent
 @Module
 @InstallIn(SingletonComponent::class)
 interface RepositoryModule {
+
+    @Binds
+    fun bindsAccountRepository(
+        accountRepository: AccountRepositoryImpl,
+    ): AccountRepository
 
     @Binds
     fun bindsTransactionRepository(

@@ -4,37 +4,46 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ShoppingBag
-import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material.icons.outlined.Train
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.fontaipi.expensetracker.data.database.entity.AccountColors
+import com.fontaipi.expensetracker.model.Account
 import com.fontaipi.expensetracker.model.Category
-import com.fontaipi.expensetracker.ui.page.home.TransactionCategory
+import com.fontaipi.expensetracker.model.CategoryTotalTransaction
 import com.fontaipi.expensetracker.ui.page.home.sampleCategories
-import com.fontaipi.expensetracker.ui.theme.CategoryBlue
-import com.fontaipi.expensetracker.ui.theme.CategoryGreen
-import com.fontaipi.expensetracker.ui.theme.CategoryOrange
-import com.fontaipi.expensetracker.ui.theme.CategoryPurple
-import com.fontaipi.expensetracker.ui.theme.CategoryRed
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
 import java.math.BigDecimal
+import java.math.RoundingMode
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.util.Date
+import java.util.Locale
+
+val sampleAccounts = listOf(
+    Account(name = "Main account", balance = BigDecimal(100), colors = AccountColors.Type1),
+    Account(name = "Savings", balance = BigDecimal(100), colors = AccountColors.Type2),
+    Account(name = "Credit card", balance = BigDecimal(100), colors = AccountColors.Type3),
+)
 
 @Composable
 fun QuickAction(
@@ -42,7 +51,7 @@ fun QuickAction(
     title: String,
     subtitle: String? = null,
     onClick: () -> Unit,
-    content: @Composable () -> Unit = {},
+    content: @Composable ColumnScope.() -> Unit = {},
 ) {
     Surface(
         modifier = modifier,
@@ -52,7 +61,7 @@ fun QuickAction(
         Column(
             modifier = modifier
                 .padding(10.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Column {
                 Text(text = title, style = MaterialTheme.typography.titleMedium)
@@ -71,28 +80,24 @@ fun QuickAction(
 }
 
 @Composable
-fun MyWallet() {
+fun MyWallet(
+    accounts: List<Account>,
+    onClick: () -> Unit
+) {
     QuickAction(
         modifier = Modifier.height(96.dp),
         title = "My wallets",
-        subtitle = "3 callets in total",
-        onClick = {}
+        subtitle = "${accounts.size} wallets in total",
+        onClick = onClick
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy((-20).dp)
         ) {
-            WalletIcon(
-                primaryColor = CategoryGreen,
-                secondaryColor = CategoryOrange,
-            )
-            WalletIcon(
-                primaryColor = CategoryOrange,
-                secondaryColor = CategoryRed,
-            )
-            WalletIcon(
-                primaryColor = CategoryPurple,
-                secondaryColor = CategoryBlue,
-            )
+            accounts.forEach {
+                WalletIcon(
+                    accountColors = it.colors,
+                )
+            }
         }
     }
 }
@@ -119,22 +124,42 @@ val sampleTransactionsPerCategories = listOf(
 
 @Composable
 fun AllTransactions(
-    transactionsPerCategories: List<TransactionsPerCategory> = sampleTransactionsPerCategories,
+    categoryTotalTransactions: List<CategoryTotalTransaction>,
 ) {
-    val total = transactionsPerCategories.sumOf { it.amount }
+    val month = LocalDateTime.now().month.name
+    var animationPlayed by remember { mutableStateOf(false) }
+    val total by remember { derivedStateOf { categoryTotalTransactions.sumOf { it.total } } }
+
+    LaunchedEffect(Unit) {
+        animationPlayed = true
+    }
+
     QuickAction(
         modifier = Modifier.height(96.dp),
         title = "All transactions",
-        subtitle = "$total€ spent in July",
+        subtitle = "$total€ spent in ${
+            SimpleDateFormat("MMMM", Locale.getDefault()).format(Date())
+        }",
         onClick = {}
     ) {
         Row(
             modifier = Modifier.clip(MaterialTheme.shapes.extraSmall)
         ) {
-            transactionsPerCategories.forEach { category ->
+            categoryTotalTransactions.forEach { category ->
+                val targetWeight by remember {
+                    derivedStateOf {
+                        category.total.divide(
+                            total,
+                            10,
+                            RoundingMode.HALF_EVEN
+                        ).toFloat()
+                    }
+                }
+
                 Box(
                     modifier = Modifier
-                        .weight((category.amount / total).toFloat())
+                        .widthIn(min = 2.dp)
+                        .weight(targetWeight)
                         .height(14.dp)
                         .background(category.category.color)
                 )
@@ -155,15 +180,16 @@ fun Debts() {
 
 @Composable
 fun TopCategories(
-    transactionsPerCategories: List<TransactionsPerCategory> = sampleTransactionsPerCategories,
-    ) {
+    transactionsPerCategories: List<CategoryTotalTransaction>,
+) {
     QuickAction(
         modifier = Modifier.height(208.dp),
         title = "Top categories",
         onClick = {}
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             transactionsPerCategories.take(3).forEach { category ->
                 Row(
@@ -182,7 +208,7 @@ fun TopCategories(
                             style = MaterialTheme.typography.labelMedium,
                         )
                         Text(
-                            text = "${category.amount}€",
+                            text = "${category.total}€",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.outline,
                         )
@@ -190,7 +216,13 @@ fun TopCategories(
                 }
             }
         }
-        Text(text = "+ ${transactionsPerCategories.size - 3} more", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
+        if (transactionsPerCategories.size > 3) {
+            Text(
+                text = "+ ${transactionsPerCategories.size - 3} more",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.outline
+            )
+        }
     }
 }
 
@@ -208,7 +240,7 @@ fun Subscriptions() {
 @Composable
 fun MyWalletPreview() {
     ExpenseTrackerTheme {
-        MyWallet()
+        MyWallet(accounts = sampleAccounts, onClick = {})
     }
 }
 
@@ -216,7 +248,7 @@ fun MyWalletPreview() {
 @Composable
 fun AllTransactionsPreview() {
     ExpenseTrackerTheme {
-        AllTransactions()
+        AllTransactions(listOf())
     }
 }
 
@@ -232,7 +264,7 @@ fun DebtsPreview() {
 @Composable
 fun TopCategoriesPreview() {
     ExpenseTrackerTheme {
-        TopCategories()
+        TopCategories(listOf())
     }
 }
 
@@ -256,16 +288,16 @@ fun QuickActionGridPreview() {
             columns = StaggeredGridCells.Fixed(2),
         ) {
             item {
-                MyWallet()
+                MyWallet(accounts = sampleAccounts, onClick = {})
             }
             item {
-                AllTransactions()
+                AllTransactions(listOf())
             }
             item {
                 Debts()
             }
             item {
-                TopCategories()
+                TopCategories(listOf())
             }
             item {
                 Subscriptions()

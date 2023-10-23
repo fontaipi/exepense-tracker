@@ -30,9 +30,11 @@ import androidx.navigation.compose.rememberNavController
 import com.fontaipi.expensetracker.ui.component.BottomAppBar
 import com.fontaipi.expensetracker.ui.component.TopAppBar
 import com.fontaipi.expensetracker.ui.component.animatedComposable
+import com.fontaipi.expensetracker.ui.component.animatedComposableVariant
 import com.fontaipi.expensetracker.ui.component.slideInVerticallyComposable
 import com.fontaipi.expensetracker.ui.page.home.AddTransactionRoute
 import com.fontaipi.expensetracker.ui.page.home.HomeRoute
+import com.fontaipi.expensetracker.ui.page.wallets.WalletsRoute
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,6 +101,9 @@ fun ExpenseTrackerApp() {
                     updateScaffoldViewState = { scaffoldViewState = it },
                     navigateToAddTransaction = {
                         navController.navigate("addTransaction")
+                    },
+                    navigateToWallets = {
+                        navController.navigate("wallets")
                     }
                 )
             }
@@ -106,6 +111,14 @@ fun ExpenseTrackerApp() {
         slideInVerticallyComposable("addTransaction") {
             AddTransactionRoute(
                 onCloseClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        animatedComposableVariant("wallets") {
+            WalletsRoute(
+                onBackClick = {
                     navController.popBackStack()
                 }
             )
@@ -119,6 +132,7 @@ fun MainBottomNav(
     navController: NavHostController,
     updateScaffoldViewState: (ScaffoldViewState) -> Unit,
     navigateToAddTransaction: () -> Unit,
+    navigateToWallets: () -> Unit,
 ) {
     NavHost(
         modifier = modifier,
@@ -128,7 +142,8 @@ fun MainBottomNav(
         animatedComposable(TopLevelDestination.HOME.name) {
             HomeRoute(
                 updateScaffoldViewState = updateScaffoldViewState,
-                navigateToAddTransaction = navigateToAddTransaction
+                navigateToAddTransaction = navigateToAddTransaction,
+                navigateToWallets = navigateToWallets
             )
         }
 
