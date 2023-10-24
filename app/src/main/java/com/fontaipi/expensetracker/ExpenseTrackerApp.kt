@@ -34,6 +34,7 @@ import com.fontaipi.expensetracker.ui.component.animatedComposableVariant
 import com.fontaipi.expensetracker.ui.component.slideInVerticallyComposable
 import com.fontaipi.expensetracker.ui.page.home.AddTransactionRoute
 import com.fontaipi.expensetracker.ui.page.home.HomeRoute
+import com.fontaipi.expensetracker.ui.page.settings.SettingsRoute
 import com.fontaipi.expensetracker.ui.page.wallets.WalletsRoute
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,13 +49,19 @@ fun ExpenseTrackerApp() {
                 topBar = {
                     TopAppBar(
                         title = {
-                            Column {
+                            if (scaffoldViewState.topAppBarTitle != null) {
                                 Text(
-                                    text = "Total balance",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.outline
+                                    text = scaffoldViewState.topAppBarTitle!!,
                                 )
-                                Text(text = "4 307, 00€")
+                            } else {
+                                Column {
+                                    Text(
+                                        text = "Total balance",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
+                                    Text(text = "4 307, 00€")
+                                }
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -160,9 +167,7 @@ fun MainBottomNav(
         }
 
         composable(TopLevelDestination.SETTINGS.name) {
-            Column {
-                Text("Settings")
-            }
+            SettingsRoute(updateScaffoldViewState = updateScaffoldViewState)
         }
     }
 }

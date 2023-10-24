@@ -396,8 +396,7 @@ fun Expense(
 
         Column {
             SectionTitle(title = "Additional information")
-            Column(
-            ) {
+            Column {
                 InfoWithLabel(
                     label = "Date",
                     info = {
@@ -446,7 +445,6 @@ fun Expense(
                         type = TransactionType.EXPENSE,
                         categoryId = selectedCategoryId!!,
                         accountId = selectedAccountId!!,
-                        //hashtags = emptySet(),
                         date = if (datePickerState.selectedDateMillis != null) Instant.ofEpochMilli(
                             datePickerState.selectedDateMillis!!
                         ) else Instant.now()
