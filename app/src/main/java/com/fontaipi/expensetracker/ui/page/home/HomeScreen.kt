@@ -21,7 +21,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -42,6 +44,7 @@ import com.fontaipi.expensetracker.ui.component.TopCategories
 import com.fontaipi.expensetracker.ui.component.TransactionCard
 import com.fontaipi.expensetracker.ui.page.add.transaction.TransactionType
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
+import java.time.ZoneId
 
 data class Stock(
     val ticker: String,
@@ -170,10 +173,27 @@ fun HomeScreen(
                     onButtonClick = {})
                 when (transactionsState) {
                     is TransactionsState.Success -> {
-                        Transactions(
-                            modifier = Modifier.fillMaxWidth(),
-                            transactions = transactionsState.transactions
-                        )
+                        val date by remember {
+                            derivedStateOf {
+                                transactionsState.transactions.firstOrNull()?.date?.let {
+                                    val date = it.atZone(ZoneId.systemDefault()).toLocalDate()
+                                    "${
+                                        date.month.name.lowercase()
+                                            .replaceFirstChar(Char::titlecase)
+                                    } ${date.year}"
+                                } ?: ""
+                            }
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(text = date, style = MaterialTheme.typography.titleMedium)
+                            Transactions(
+                                modifier = Modifier.fillMaxWidth(),
+                                transactions = transactionsState.transactions
+                            )
+                        }
+
                     }
 
                     TransactionsState.Loading -> {
@@ -229,7 +249,6 @@ fun Transactions(
     modifier: Modifier = Modifier,
     transactions: List<Transaction>
 ) {
-
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -250,30 +269,37 @@ fun Transactions(
             }
         } else {
             Spacer(modifier = Modifier.height(16.dp))
-            Column(
+            TransactionsEmpty(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Image(
-                    modifier = Modifier.height(120.dp),
-                    painter = painterResource(id = R.drawable.no_data),
-                    contentDescription = "no data"
-                )
-                Text(
-                    text = "No transactions yet",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = "Add your first transaction to see it here",
-                    color = MaterialTheme.colorScheme.outline,
-                    style = MaterialTheme.typography.labelMedium,
-                )
-            }
-
+            )
         }
     }
+}
 
+@Composable
+fun TransactionsEmpty(
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Image(
+            modifier = Modifier.height(120.dp),
+            painter = painterResource(id = R.drawable.no_data),
+            contentDescription = "no data"
+        )
+        Text(
+            text = "No transactions yet",
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = "Add your first transaction to see it here",
+            color = MaterialTheme.colorScheme.outline,
+            style = MaterialTheme.typography.labelMedium,
+        )
+    }
 }
 
 @Preview

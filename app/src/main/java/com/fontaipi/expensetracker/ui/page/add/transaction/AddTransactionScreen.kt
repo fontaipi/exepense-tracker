@@ -44,10 +44,12 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -78,6 +80,7 @@ import com.fontaipi.expensetracker.model.CategoryIcon
 import com.fontaipi.expensetracker.model.Wallet
 import com.fontaipi.expensetracker.ui.component.CategoryBox
 import com.fontaipi.expensetracker.ui.component.SectionTitle
+import com.fontaipi.expensetracker.ui.component.TimePickerDialog
 import com.fontaipi.expensetracker.ui.component.WalletIcon
 import com.fontaipi.expensetracker.ui.theme.CategoryBlue
 import com.fontaipi.expensetracker.ui.theme.CategoryGreen
@@ -85,6 +88,8 @@ import com.fontaipi.expensetracker.ui.theme.CategoryRed
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 
@@ -254,6 +259,7 @@ fun Expense(
     var showCategoryBottomSheet by remember { mutableStateOf(false) }
     var showAccountBottomSheet by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     var amount by remember { mutableStateOf("") }
     var selectedCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -262,6 +268,27 @@ fun Expense(
 
     val datePickerState =
         rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
+    val timePickerState = rememberTimePickerState(
+        initialHour = Instant.now().atZone(ZoneId.systemDefault()).hour,
+        initialMinute = Instant.now().atZone(ZoneId.systemDefault()).minute
+    )
+
+    val selectedDate by remember {
+        derivedStateOf {
+            val selectedDate = Instant.ofEpochMilli(
+                datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+            ).atZone(ZoneId.systemDefault()).toLocalDate()
+            val combinedDateTime = LocalDateTime.of(
+                selectedDate.year,
+                selectedDate.month,
+                selectedDate.dayOfMonth,
+                timePickerState.hour,
+                timePickerState.minute
+            )
+            combinedDateTime.atZone(ZoneId.systemDefault()).toInstant()
+        }
+    }
+
     var isRepeatPayment by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.padding(horizontal = 16.dp),
@@ -401,7 +428,7 @@ fun Expense(
                     info = {
                         Text(
                             text = if (datePickerState.selectedDateMillis != null) convertMillisToDate(
-                                datePickerState.selectedDateMillis!!
+                                selectedDate.toEpochMilli()
                             ) else "Not set", style = MaterialTheme.typography.labelLarge
                         )
                     },
@@ -444,9 +471,7 @@ fun Expense(
                         type = TransactionType.EXPENSE,
                         categoryId = selectedCategoryId!!,
                         accountId = selectedAccountId!!,
-                        date = if (datePickerState.selectedDateMillis != null) Instant.ofEpochMilli(
-                            datePickerState.selectedDateMillis!!
-                        ) else Instant.now()
+                        date = selectedDate
                     )
                 )
                 onCloseClick()
@@ -490,6 +515,7 @@ fun Expense(
                 TextButton(
                     onClick = {
                         showDatePicker = false
+                        showTimePicker = true
                     },
                     enabled = confirmEnabled
                 ) {
@@ -507,6 +533,19 @@ fun Expense(
             }
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        TimePickerDialog(
+            onCancel = {
+                showTimePicker = false
+            },
+            onConfirm = {
+                showTimePicker = false
+            },
+        ) {
+            TimePicker(state = timePickerState)
         }
     }
 }
@@ -670,7 +709,7 @@ fun InfoWithLabel(
 }
 
 fun convertMillisToDate(millis: Long): String {
-    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
     val date = Date(millis)
     return dateFormat.format(date)
 }

@@ -14,11 +14,9 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.fontaipi.expensetracker.data.database.dao.WalletDao
 import com.fontaipi.expensetracker.data.database.dao.CategoryDao
+import com.fontaipi.expensetracker.data.database.dao.WalletDao
 import com.fontaipi.expensetracker.data.database.entity.categories
-import com.fontaipi.expensetracker.data.database.entity.sampleMainAccount
-import com.fontaipi.expensetracker.data.database.entity.sampleSavingAccount
 import com.fontaipi.expensetracker.ui.page.settings.UserPreferencesState
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,7 +41,7 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var categoryDao: CategoryDao
 
-    val viewModel: MainActivityViewModel by viewModels()
+    private val viewModel: MainActivityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -73,8 +71,6 @@ class MainActivity : ComponentActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             if (categoryDao.countCategories() == 0) {
-                walletDao.upsertWallet(sampleMainAccount)
-                walletDao.upsertWallet(sampleSavingAccount)
                 categoryDao.upsertCategories(categories)
             }
         }
