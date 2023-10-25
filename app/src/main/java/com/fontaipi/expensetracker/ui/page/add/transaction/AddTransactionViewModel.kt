@@ -1,12 +1,12 @@
-package com.fontaipi.expensetracker.ui.page.home
+package com.fontaipi.expensetracker.ui.page.add.transaction
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fontaipi.expensetracker.data.database.entity.TransactionEntity
-import com.fontaipi.expensetracker.data.repository.AccountRepository
+import com.fontaipi.expensetracker.data.repository.WalletRepository
 import com.fontaipi.expensetracker.data.repository.CategoryRepository
 import com.fontaipi.expensetracker.data.repository.TransactionRepository
-import com.fontaipi.expensetracker.model.Account
+import com.fontaipi.expensetracker.model.Wallet
 import com.fontaipi.expensetracker.model.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,13 +19,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
-    private val accountRepository: AccountRepository,
+    private val walletRepository: WalletRepository,
     private val transactionRepository: TransactionRepository,
     private val categoryRepository: CategoryRepository,
 ) : ViewModel() {
 
     val addTransactionState: StateFlow<AddTransactionState> = combine(
-        accountRepository.getAccounts(),
+        walletRepository.getAccounts(),
         categoryRepository.getCategories(),
         ::Pair
     ).map { (accounts, categories) ->
@@ -45,7 +45,7 @@ class AddTransactionViewModel @Inject constructor(
 }
 
 sealed class AddTransactionState {
-    data class Success(val accounts: List<Account>, val categories: List<Category>) :
+    data class Success(val wallets: List<Wallet>, val categories: List<Category>) :
         AddTransactionState()
 
     data object Loading : AddTransactionState()

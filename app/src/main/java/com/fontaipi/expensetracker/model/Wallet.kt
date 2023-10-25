@@ -1,11 +1,11 @@
 package com.fontaipi.expensetracker.model
 
-import com.fontaipi.expensetracker.data.database.entity.AccountColors
+import com.fontaipi.expensetracker.data.database.entity.WalletColors
 import java.math.BigDecimal
 
-data class Account(
+data class Wallet(
     val id: Long = 0,
     val name: String,
     val balance: BigDecimal,
-    val colors: AccountColors,
+    val colors: WalletColors,
 )

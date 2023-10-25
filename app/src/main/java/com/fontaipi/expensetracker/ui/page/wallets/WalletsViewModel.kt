@@ -2,9 +2,9 @@ package com.fontaipi.expensetracker.ui.page.wallets
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fontaipi.expensetracker.data.repository.AccountRepository
+import com.fontaipi.expensetracker.data.repository.WalletRepository
 import com.fontaipi.expensetracker.data.repository.TransactionRepository
-import com.fontaipi.expensetracker.model.Account
+import com.fontaipi.expensetracker.model.Wallet
 import com.fontaipi.expensetracker.model.Transaction
 import com.fontaipi.expensetracker.ui.page.home.TransactionsState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,13 +20,13 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class WalletsViewModel @Inject constructor(
-    private val accountRepository: AccountRepository,
+    private val walletRepository: WalletRepository,
     private val transactionRepository: TransactionRepository,
 ) : ViewModel() {
     private val _selectedAccountId = MutableStateFlow(-1L)
 
-    val accountState = accountRepository.getAccounts()
-        .map<List<Account>, AccountState> {
+    val walletState = walletRepository.getAccounts()
+        .map<List<Wallet>, AccountState> {
             AccountState.Success(it)
         }
         .onStart {
@@ -55,6 +55,6 @@ class WalletsViewModel @Inject constructor(
 }
 
 sealed class AccountState {
-    data class Success(val accounts: List<Account>) : AccountState()
+    data class Success(val wallets: List<Wallet>) : AccountState()
     data object Loading : AccountState()
 }

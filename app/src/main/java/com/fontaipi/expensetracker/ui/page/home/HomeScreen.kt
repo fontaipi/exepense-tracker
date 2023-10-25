@@ -1,9 +1,11 @@
 package com.fontaipi.expensetracker.ui.page.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,15 +17,19 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.fontaipi.expensetracker.R
 import com.fontaipi.expensetracker.ScaffoldViewState
 import com.fontaipi.expensetracker.model.Transaction
 import com.fontaipi.expensetracker.ui.component.AllTransactions
@@ -34,6 +40,7 @@ import com.fontaipi.expensetracker.ui.component.StockCard
 import com.fontaipi.expensetracker.ui.component.Subscriptions
 import com.fontaipi.expensetracker.ui.component.TopCategories
 import com.fontaipi.expensetracker.ui.component.TransactionCard
+import com.fontaipi.expensetracker.ui.page.add.transaction.TransactionType
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
 
 data class Stock(
@@ -90,10 +97,12 @@ fun HomeScreen(
     navigateToAddTransaction: () -> Unit,
     navigateToWallets: () -> Unit,
 ) {
+    val accountsTotal = shouldShowWalletsTotal(homePageState)
     val scrollingState = rememberScrollState()
-    LaunchedEffect(Unit) {
+    LaunchedEffect(homePageState) {
         updateScaffoldViewState(
             ScaffoldViewState(
+                topAppBarTitle = "$accountsTotal€",
                 onFabClick = navigateToAddTransaction,
             )
         )
@@ -117,7 +126,7 @@ fun HomeScreen(
                 ) {
                     item {
                         MyWallet(
-                            accounts = homePageState.accounts,
+                            wallets = homePageState.wallets,
                             onClick = navigateToWallets
                         )
                     }
@@ -162,6 +171,7 @@ fun HomeScreen(
                 when (transactionsState) {
                     is TransactionsState.Success -> {
                         Transactions(
+                            modifier = Modifier.fillMaxWidth(),
                             transactions = transactionsState.transactions
                         )
                     }
@@ -178,6 +188,14 @@ fun HomeScreen(
             }
         }
     }
+}
+
+@Composable
+private fun shouldShowWalletsTotal(
+    homePageState: HomePageState,
+): String = when (homePageState) {
+    HomePageState.Loading -> "0"
+    is HomePageState.Success -> homePageState.wallets.sumOf { it.balance }.toString()
 }
 
 
@@ -208,24 +226,51 @@ fun StockWatchlist() {
 
 @Composable
 fun Transactions(
+    modifier: Modifier = Modifier,
     transactions: List<Transaction>
 ) {
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        transactions.forEach { transaction ->
-            val sign = when (transaction.type) {
-                TransactionType.EXPENSE -> "-"
-                TransactionType.INCOME -> "+"
-                else -> ""
+        if (transactions.isNotEmpty()) {
+            transactions.forEach { transaction ->
+                val sign = when (transaction.type) {
+                    TransactionType.EXPENSE -> "-"
+                    TransactionType.INCOME -> "+"
+                    else -> ""
+                }
+                TransactionCard(
+                    category = transaction.category,
+                    hashtags = transaction.hashtags,
+                    price = "$sign ${transaction.amount}€",
+                    wallet = transaction.wallet,
+                )
             }
-            TransactionCard(
-                category = transaction.category,
-                hashtags = transaction.hashtags,
-                price = "$sign ${transaction.amount}€",
-                account = transaction.account,
-            )
+        } else {
+            Spacer(modifier = Modifier.height(16.dp))
+            Column(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Image(
+                    modifier = Modifier.height(120.dp),
+                    painter = painterResource(id = R.drawable.no_data),
+                    contentDescription = "no data"
+                )
+                Text(
+                    text = "No transactions yet",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = "Add your first transaction to see it here",
+                    color = MaterialTheme.colorScheme.outline,
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            }
+
         }
     }
 

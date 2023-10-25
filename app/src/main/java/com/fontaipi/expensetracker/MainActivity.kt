@@ -14,7 +14,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.fontaipi.expensetracker.data.database.dao.AccountDao
+import com.fontaipi.expensetracker.data.database.dao.WalletDao
 import com.fontaipi.expensetracker.data.database.dao.CategoryDao
 import com.fontaipi.expensetracker.data.database.entity.categories
 import com.fontaipi.expensetracker.data.database.entity.sampleMainAccount
@@ -38,7 +38,7 @@ data class ScaffoldViewState(
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject
-    lateinit var accountDao: AccountDao
+    lateinit var walletDao: WalletDao
 
     @Inject
     lateinit var categoryDao: CategoryDao
@@ -73,8 +73,8 @@ class MainActivity : ComponentActivity() {
 
         CoroutineScope(Dispatchers.IO).launch {
             if (categoryDao.countCategories() == 0) {
-                accountDao.upsertAccount(sampleMainAccount)
-                accountDao.upsertAccount(sampleSavingAccount)
+                walletDao.upsertWallet(sampleMainAccount)
+                walletDao.upsertWallet(sampleSavingAccount)
                 categoryDao.upsertCategories(categories)
             }
         }

@@ -2,10 +2,10 @@ package com.fontaipi.expensetracker.ui.page.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fontaipi.expensetracker.data.repository.AccountRepository
+import com.fontaipi.expensetracker.data.repository.WalletRepository
 import com.fontaipi.expensetracker.data.repository.TransactionRepository
 import com.fontaipi.expensetracker.domain.GetCategoryTotalTransactionUseCase
-import com.fontaipi.expensetracker.model.Account
+import com.fontaipi.expensetracker.model.Wallet
 import com.fontaipi.expensetracker.model.CategoryTotalTransaction
 import com.fontaipi.expensetracker.model.Transaction
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val accountRepository: AccountRepository,
+    private val walletRepository: WalletRepository,
     private val transactionRepository: TransactionRepository,
     private val getCategoryTotalTransaction: GetCategoryTotalTransactionUseCase
 ) : ViewModel() {
@@ -37,13 +37,13 @@ class HomeViewModel @Inject constructor(
     )
 
     val homePageState = combine(
-        accountRepository.getAccounts(),
+        walletRepository.getAccounts(),
         getCategoryTotalTransaction(
             LocalDateTime.now().monthValue,
             LocalDateTime.now().year
         ),
         ::Pair
-    ).map<Pair<List<Account>, List<CategoryTotalTransaction>>, HomePageState> { (accounts, transactions) ->
+    ).map<Pair<List<Wallet>, List<CategoryTotalTransaction>>, HomePageState> { (accounts, transactions) ->
         HomePageState.Success(accounts, transactions)
     }.onStart {
         emit(HomePageState.Loading)
@@ -56,7 +56,7 @@ class HomeViewModel @Inject constructor(
 
 sealed class HomePageState {
     data class Success(
-        val accounts: List<Account>,
+        val wallets: List<Wallet>,
         val categoryTotalTransaction: List<CategoryTotalTransaction>
     ) : HomePageState()
 

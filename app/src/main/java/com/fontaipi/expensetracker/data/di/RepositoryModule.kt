@@ -1,7 +1,7 @@
 package com.fontaipi.expensetracker.data.di
 
-import com.fontaipi.expensetracker.data.repository.AccountRepository
-import com.fontaipi.expensetracker.data.repository.AccountRepositoryImpl
+import com.fontaipi.expensetracker.data.repository.WalletRepository
+import com.fontaipi.expensetracker.data.repository.WalletRepositoryImpl
 import com.fontaipi.expensetracker.data.repository.CategoryRepository
 import com.fontaipi.expensetracker.data.repository.CategoryRepositoryImpl
 import com.fontaipi.expensetracker.data.repository.TransactionRepository
@@ -17,8 +17,8 @@ interface RepositoryModule {
 
     @Binds
     fun bindsAccountRepository(
-        accountRepository: AccountRepositoryImpl,
-    ): AccountRepository
+        accountRepository: WalletRepositoryImpl,
+    ): WalletRepository
 
     @Binds
     fun bindsTransactionRepository(

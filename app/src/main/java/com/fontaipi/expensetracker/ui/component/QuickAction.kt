@@ -26,11 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.fontaipi.expensetracker.data.database.entity.AccountColors
-import com.fontaipi.expensetracker.model.Account
+import com.fontaipi.expensetracker.data.database.entity.WalletColors
+import com.fontaipi.expensetracker.model.Wallet
 import com.fontaipi.expensetracker.model.Category
 import com.fontaipi.expensetracker.model.CategoryTotalTransaction
-import com.fontaipi.expensetracker.ui.page.home.sampleCategories
+import com.fontaipi.expensetracker.ui.page.add.transaction.sampleCategories
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -39,10 +39,10 @@ import java.time.LocalDateTime
 import java.util.Date
 import java.util.Locale
 
-val sampleAccounts = listOf(
-    Account(name = "Main account", balance = BigDecimal(100), colors = AccountColors.Type1),
-    Account(name = "Savings", balance = BigDecimal(100), colors = AccountColors.Type2),
-    Account(name = "Credit card", balance = BigDecimal(100), colors = AccountColors.Type3),
+val sampleWallets = listOf(
+    Wallet(name = "Main account", balance = BigDecimal(100), colors = WalletColors.Type1),
+    Wallet(name = "Savings", balance = BigDecimal(100), colors = WalletColors.Type2),
+    Wallet(name = "Credit card", balance = BigDecimal(100), colors = WalletColors.Type3),
 )
 
 @Composable
@@ -81,21 +81,21 @@ fun QuickAction(
 
 @Composable
 fun MyWallet(
-    accounts: List<Account>,
+    wallets: List<Wallet>,
     onClick: () -> Unit
 ) {
     QuickAction(
         modifier = Modifier.height(96.dp),
         title = "My wallets",
-        subtitle = "${accounts.size} wallets in total",
+        subtitle = "${wallets.size} wallets in total",
         onClick = onClick
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy((-20).dp)
         ) {
-            accounts.forEach {
+            wallets.forEach {
                 WalletIcon(
-                    accountColors = it.colors,
+                    walletColors = it.colors,
                 )
             }
         }
@@ -240,7 +240,7 @@ fun Subscriptions() {
 @Composable
 fun MyWalletPreview() {
     ExpenseTrackerTheme {
-        MyWallet(accounts = sampleAccounts, onClick = {})
+        MyWallet(wallets = sampleWallets, onClick = {})
     }
 }
 
@@ -288,7 +288,7 @@ fun QuickActionGridPreview() {
             columns = StaggeredGridCells.Fixed(2),
         ) {
             item {
-                MyWallet(accounts = sampleAccounts, onClick = {})
+                MyWallet(wallets = sampleWallets, onClick = {})
             }
             item {
                 AllTransactions(listOf())

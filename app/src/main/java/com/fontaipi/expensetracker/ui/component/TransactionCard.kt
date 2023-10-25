@@ -22,10 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.fontaipi.expensetracker.data.database.entity.AccountColors
-import com.fontaipi.expensetracker.model.Account
+import com.fontaipi.expensetracker.data.database.entity.WalletColors
 import com.fontaipi.expensetracker.model.Category
 import com.fontaipi.expensetracker.model.CategoryIcon
+import com.fontaipi.expensetracker.model.Wallet
 import com.fontaipi.expensetracker.ui.theme.CategoryRed
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
 import java.math.BigDecimal
@@ -40,10 +40,10 @@ fun TransactionCard(
     ),
     hashtags: Set<String> = setOf("starbucks", "flatwhite"),
     price: String = "3,50€",
-    account: Account = Account(
+    wallet: Wallet = Wallet(
         name = "Main account",
         balance = BigDecimal(100),
-        colors = AccountColors.Type1
+        colors = WalletColors.Type1
     ),
 ) {
     Card(
@@ -94,7 +94,7 @@ fun TransactionCard(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Text(
-                        account.name,
+                        wallet.name,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.outline
                     )
@@ -102,7 +102,7 @@ fun TransactionCard(
                         modifier = Modifier
                             .size(12.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .background(account.colors.primary)
+                            .background(wallet.colors.primary)
                     )
                 }
             }

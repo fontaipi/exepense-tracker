@@ -1,4 +1,4 @@
-package com.fontaipi.expensetracker.ui.page.home
+package com.fontaipi.expensetracker.ui.page.add.transaction
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -73,9 +73,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.fontaipi.expensetracker.data.database.entity.TransactionEntity
-import com.fontaipi.expensetracker.model.Account
 import com.fontaipi.expensetracker.model.Category
 import com.fontaipi.expensetracker.model.CategoryIcon
+import com.fontaipi.expensetracker.model.Wallet
 import com.fontaipi.expensetracker.ui.component.CategoryBox
 import com.fontaipi.expensetracker.ui.component.SectionTitle
 import com.fontaipi.expensetracker.ui.component.WalletIcon
@@ -219,7 +219,7 @@ fun AddTransactionScreen(
                 is AddTransactionState.Success -> {
                     when (selectedTabIndex) {
                         0 -> Expense(
-                            accounts = addTransactionState.accounts,
+                            wallets = addTransactionState.wallets,
                             categories = addTransactionState.categories,
                             addTransaction = addTransaction,
                             onCloseClick = onCloseClick
@@ -246,7 +246,7 @@ fun AddTransactionScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Expense(
-    accounts: List<Account>,
+    wallets: List<Wallet>,
     categories: List<Category>,
     addTransaction: (TransactionEntity) -> Unit,
     onCloseClick: () -> Unit
@@ -257,8 +257,8 @@ fun Expense(
 
     var amount by remember { mutableStateOf("") }
     var selectedCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var selectedAccountId by rememberSaveable { mutableStateOf(accounts.firstOrNull()?.id) }
-    val selectedAccount by remember { derivedStateOf { accounts.firstOrNull { it.id == selectedAccountId } } }
+    var selectedAccountId by rememberSaveable { mutableStateOf(wallets.firstOrNull()?.id) }
+    val selectedAccount by remember { derivedStateOf { wallets.firstOrNull { it.id == selectedAccountId } } }
 
     val datePickerState =
         rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
@@ -274,7 +274,6 @@ fun Expense(
             OutlinedTextField(
                 modifier = Modifier.weight(1f),
                 prefix = { Text(text = "-") },
-                suffix = { Text(text = "€") },
                 shape = MaterialTheme.shapes.small,
                 value = amount,
                 onValueChange = { amount = it },
@@ -381,7 +380,7 @@ fun Expense(
                         Spacer(modifier = Modifier.width(4.dp))
                         if (selectedAccount != null) {
                             WalletIcon(
-                                accountColors = selectedAccount!!.colors,
+                                walletColors = selectedAccount!!.colors,
                             )
                         }
                     }
@@ -473,7 +472,7 @@ fun Expense(
 
     if (showAccountBottomSheet) {
         SelectAccountBottomSheet(
-            accounts = accounts,
+            wallets = wallets,
             onCategoryClick = { selectedAccountId = it },
             onDismissRequest = {
                 showAccountBottomSheet = false
@@ -562,7 +561,7 @@ fun SelectCategoryBottomSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectAccountBottomSheet(
-    accounts: List<Account>,
+    wallets: List<Wallet>,
     onDismissRequest: () -> Unit,
     onCategoryClick: (Long) -> Unit,
 ) {
@@ -590,9 +589,9 @@ fun SelectAccountBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(accounts) {
+                items(wallets) {
                     AccountCard(
-                        account = it,
+                        wallet = it,
                         onClick = {
                             coroutineScope.launch { bottomSheetState.hide() }
                             onCategoryClick(it.id)
@@ -630,7 +629,7 @@ fun CategoryCard(
 
 @Composable
 fun AccountCard(
-    account: Account,
+    wallet: Wallet,
     onClick: () -> Unit,
 ) {
     Column(
@@ -640,9 +639,9 @@ fun AccountCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        WalletIcon(accountColors = account.colors)
+        WalletIcon(walletColors = wallet.colors)
         Text(
-            text = account.name,
+            text = wallet.name,
             style = MaterialTheme.typography.labelLarge,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

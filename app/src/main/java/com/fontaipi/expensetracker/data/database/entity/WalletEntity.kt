@@ -3,24 +3,24 @@ package com.fontaipi.expensetracker.data.database.entity
 import androidx.compose.ui.graphics.Color
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.fontaipi.expensetracker.model.Account
+import com.fontaipi.expensetracker.model.Wallet
 import java.math.BigDecimal
 
-val sampleMainAccount = AccountEntity(
+val sampleMainAccount = WalletEntity(
     name = "Main account",
     balance = BigDecimal(1000),
     currency = "EUR",
-    colors = AccountColors.Type1
+    colors = WalletColors.Type1
 )
 
-val sampleSavingAccount = AccountEntity(
+val sampleSavingAccount = WalletEntity(
     name = "Saving account",
     balance = BigDecimal(1300),
     currency = "EUR",
-    colors = AccountColors.Type2
+    colors = WalletColors.Type2
 )
 
-enum class AccountColors(val primary: Color, val secondary: Color) {
+enum class WalletColors(val primary: Color, val secondary: Color) {
     Type1(Color(0xFFE57373), Color(0xFFEF9A9A)),
     Type2(Color(0xFFF06292), Color(0xFFF48FB1)),
     Type3(Color(0xFFBA68C8), Color(0xFFCE93D8)),
@@ -28,14 +28,14 @@ enum class AccountColors(val primary: Color, val secondary: Color) {
     Type5(Color(0xFF7986CB), Color(0xFF9FA8DA)),
 }
 
-@Entity(tableName = "account")
-data class AccountEntity(
+@Entity(tableName = "wallet")
+data class WalletEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val name: String,
     val balance: BigDecimal,
     val currency: String,
-    val colors: AccountColors
+    val colors: WalletColors
 )
 
 data class UpdateAccountBalance(
@@ -43,7 +43,7 @@ data class UpdateAccountBalance(
     val balance: BigDecimal
 )
 
-fun AccountEntity.asExternalModel() = Account(
+fun WalletEntity.asExternalModel() = Wallet(
     id = id,
     balance = balance,
     name = name,

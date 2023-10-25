@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,8 +20,11 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fontaipi.expensetracker.data.database.entity.asExternalModel
 import com.fontaipi.expensetracker.data.database.entity.sampleMainAccount
-import com.fontaipi.expensetracker.model.Account
+import com.fontaipi.expensetracker.model.Wallet
 import com.fontaipi.expensetracker.ui.component.SectionTitle
 import com.fontaipi.expensetracker.ui.page.home.Transactions
 import com.fontaipi.expensetracker.ui.page.home.TransactionsState
@@ -51,11 +55,13 @@ import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
 @Composable
 fun WalletsRoute(
     viewModel: WalletsViewModel = hiltViewModel(),
+    navigateToAddWallet: () -> Unit,
     onBackClick: () -> Unit,
 ) {
-    val accountsState by viewModel.accountState.collectAsStateWithLifecycle()
+    val accountsState by viewModel.walletState.collectAsStateWithLifecycle()
     val transactionsState by viewModel.transactionsState.collectAsStateWithLifecycle()
     WalletsScreen(
+        navigateToAddWallet = navigateToAddWallet,
         accountsState = accountsState,
         transactionsState = transactionsState,
         selectAccount = viewModel::selectAccount,
@@ -66,6 +72,7 @@ fun WalletsRoute(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun WalletsScreen(
+    navigateToAddWallet: () -> Unit,
     accountsState: AccountState,
     transactionsState: TransactionsState,
     selectAccount: (Long) -> Unit,
@@ -89,7 +96,17 @@ fun WalletsScreen(
                     }
                 }
             )
-        }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { },
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                )
+            }
+        },
     ) { paddingsValues ->
         LazyColumn(
             modifier = Modifier
@@ -102,23 +119,42 @@ fun WalletsScreen(
             item {
                 when (accountsState) {
                     is AccountState.Success -> {
-
                         val pagerState =
-                            rememberPagerState(pageCount = { accountsState.accounts.size })
+                            rememberPagerState(pageCount = { accountsState.wallets.size })
 
                         LaunchedEffect(pagerState.currentPage) {
-                            val selectedAccount = accountsState.accounts[pagerState.currentPage]
+                            val selectedAccount = accountsState.wallets[pagerState.currentPage]
                             selectAccount(selectedAccount.id)
                         }
 
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                        ) { page ->
-                            WalletCard(
-                                modifier = Modifier.padding(16.dp),
-                                account = accountsState.accounts[page]
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            FilledTonalButton(
+                                modifier = Modifier
+                                    .align(Alignment.End)
+                                    .padding(horizontal = 16.dp),
+                                onClick = navigateToAddWallet
+                            ) {
+                                Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Text(text = "Add wallet")
+                            }
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                            ) { page ->
+                                WalletCard(
+                                    modifier = Modifier.padding(16.dp),
+                                    wallet = accountsState.wallets[page]
+                                )
+                            }
+
+                            Indicators(
+                                modifier = Modifier.align(Alignment.CenterHorizontally),
+                                size = accountsState.wallets.size,
+                                index = pagerState.currentPage
                             )
                         }
                     }
@@ -140,6 +176,7 @@ fun WalletsScreen(
                         when (transactionsState) {
                             is TransactionsState.Success -> {
                                 Transactions(
+                                    modifier = Modifier.fillMaxWidth(),
                                     transactions = transactionsState.transactions
                                 )
                             }
@@ -163,11 +200,11 @@ fun WalletsScreen(
 @Composable
 fun WalletCard(
     modifier: Modifier = Modifier,
-    account: Account
+    wallet: Wallet
 ) {
     Surface(
         modifier = modifier,
-        color = account.colors.primary,
+        color = wallet.colors.primary,
         contentColor = Color.White,
         shape = MaterialTheme.shapes.medium,
     ) {
@@ -183,7 +220,7 @@ fun WalletCard(
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                SectionTitle(title = account.name)
+                SectionTitle(title = wallet.name)
                 Box(
                     modifier = Modifier
                         .size(50.dp)
@@ -195,9 +232,36 @@ fun WalletCard(
 
             Column {
                 Text(text = "Balance", style = MaterialTheme.typography.bodyLarge)
-                Text(text = "${account.balance}€", style = MaterialTheme.typography.displaySmall)
+                Text(text = "${wallet.balance}€", style = MaterialTheme.typography.displaySmall)
             }
         }
+    }
+}
+
+@Composable
+fun Indicators(modifier: Modifier = Modifier, size: Int, index: Int) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        repeat(size) {
+            Indicator(isSelected = it == index)
+        }
+    }
+}
+
+@Composable
+fun Indicator(isSelected: Boolean) {
+    Box(
+        modifier = Modifier
+            .size(10.dp)
+            .clip(CircleShape)
+            .background(
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+            )
+    ) {
+
     }
 }
 
@@ -205,6 +269,6 @@ fun WalletCard(
 @Composable
 fun WalletCardPreview() {
     ExpenseTrackerTheme {
-        WalletCard(account = sampleMainAccount.asExternalModel())
+        WalletCard(wallet = sampleMainAccount.asExternalModel())
     }
 }

@@ -13,22 +13,22 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.fontaipi.expensetracker.data.database.entity.AccountColors
+import com.fontaipi.expensetracker.data.database.entity.WalletColors
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @Composable
 fun WalletIcon(
     modifier: Modifier = Modifier,
-    accountColors: AccountColors = AccountColors.Type3,
+    walletColors: WalletColors = WalletColors.Type3,
 ) {
     Box(
         modifier = modifier
             .size(height = 32.dp, width = 44.dp)
             .clip(MaterialTheme.shapes.extraSmall)
-            .background(accountColors.primary)
+            .background(walletColors.primary)
             .drawBehind {
                 drawRoundRect(
-                    color = accountColors.secondary,
+                    color = walletColors.secondary,
                     size = Size(width = 14.dp.toPx(), height = 10.dp.toPx()),
                     cornerRadius = CornerRadius(x = 2.dp.toPx(), y = 2.dp.toPx()),
                     topLeft = Offset(x = 32.dp.toPx(), y = 11.dp.toPx()),

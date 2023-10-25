@@ -16,7 +16,6 @@ import javax.inject.Inject
 class MainActivityViewModel @Inject constructor(
     private val preferences: ExpenseTrackerPreferences,
 ) : ViewModel() {
-
     val userPreferencesState = preferences.userData.map<UserData, UserPreferencesState> {
         UserPreferencesState.Success(it)
     }.onStart {

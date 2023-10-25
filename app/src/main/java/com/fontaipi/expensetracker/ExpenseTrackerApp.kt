@@ -32,7 +32,8 @@ import com.fontaipi.expensetracker.ui.component.TopAppBar
 import com.fontaipi.expensetracker.ui.component.animatedComposable
 import com.fontaipi.expensetracker.ui.component.animatedComposableVariant
 import com.fontaipi.expensetracker.ui.component.slideInVerticallyComposable
-import com.fontaipi.expensetracker.ui.page.home.AddTransactionRoute
+import com.fontaipi.expensetracker.ui.page.add.transaction.AddTransactionRoute
+import com.fontaipi.expensetracker.ui.page.add.wallet.AddWalletRoute
 import com.fontaipi.expensetracker.ui.page.home.HomeRoute
 import com.fontaipi.expensetracker.ui.page.settings.SettingsRoute
 import com.fontaipi.expensetracker.ui.page.wallets.WalletsRoute
@@ -123,8 +124,19 @@ fun ExpenseTrackerApp() {
             )
         }
 
+        slideInVerticallyComposable("addWallet") {
+            AddWalletRoute(
+                onCloseClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         animatedComposableVariant("wallets") {
             WalletsRoute(
+                navigateToAddWallet = {
+                    navController.navigate("addWallet")
+                },
                 onBackClick = {
                     navController.popBackStack()
                 }

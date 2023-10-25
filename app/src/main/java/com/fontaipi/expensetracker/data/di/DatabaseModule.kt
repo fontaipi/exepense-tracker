@@ -3,7 +3,7 @@ package com.fontaipi.expensetracker.data.di
 import android.content.Context
 import androidx.room.Room
 import com.fontaipi.expensetracker.data.database.ExpenseTrackerDatabase
-import com.fontaipi.expensetracker.data.database.dao.AccountDao
+import com.fontaipi.expensetracker.data.database.dao.WalletDao
 import com.fontaipi.expensetracker.data.database.dao.CategoryDao
 import com.fontaipi.expensetracker.data.database.dao.TransactionDao
 import dagger.Module
@@ -30,7 +30,7 @@ class DatabaseModule {
     @Provides
     fun providesAccountDao(
         database: ExpenseTrackerDatabase,
-    ): AccountDao = database.accountDao()
+    ): WalletDao = database.accountDao()
 
     @Provides
     fun providesCategoryDao(

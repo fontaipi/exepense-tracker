@@ -3,7 +3,7 @@ package com.fontaipi.expensetracker.domain
 import android.util.Log
 import com.fontaipi.expensetracker.data.repository.TransactionRepository
 import com.fontaipi.expensetracker.model.CategoryTotalTransaction
-import com.fontaipi.expensetracker.ui.page.home.TransactionType
+import com.fontaipi.expensetracker.ui.page.add.transaction.TransactionType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

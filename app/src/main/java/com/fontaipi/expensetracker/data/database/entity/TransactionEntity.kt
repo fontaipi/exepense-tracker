@@ -3,7 +3,7 @@ package com.fontaipi.expensetracker.data.database.entity
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.fontaipi.expensetracker.ui.page.home.TransactionType
+import com.fontaipi.expensetracker.ui.page.add.transaction.TransactionType
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -11,7 +11,7 @@ import java.time.Instant
     tableName = "transaction",
     foreignKeys = [
         ForeignKey(
-            entity = AccountEntity::class,
+            entity = WalletEntity::class,
             parentColumns = ["id"],
             childColumns = ["accountId"],
             onDelete = ForeignKey.CASCADE
