@@ -2,7 +2,6 @@ package com.fontaipi.expensetracker.ui.page.wallets
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -212,23 +211,10 @@ fun WalletCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(236.dp)
-                .padding(16.dp),
+                .padding(24.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                SectionTitle(title = wallet.name)
-                Box(
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                        .clickable { },
-                )
-            }
+            SectionTitle(title = wallet.name)
 
             Column {
                 Text(text = "Balance", style = MaterialTheme.typography.bodyLarge)
