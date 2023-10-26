@@ -1,5 +1,6 @@
 package com.fontaipi.expensetracker.model
 
+import androidx.compose.runtime.Immutable
 import com.fontaipi.expensetracker.data.database.entity.WalletColors
 import java.math.BigDecimal
 

@@ -1,7 +1,7 @@
 package com.fontaipi.expensetracker.data.repository
 
-import com.fontaipi.expensetracker.data.database.dao.WalletDao
 import com.fontaipi.expensetracker.data.database.dao.TransactionDao
+import com.fontaipi.expensetracker.data.database.dao.WalletDao
 import com.fontaipi.expensetracker.data.database.entity.TransactionEntity
 import com.fontaipi.expensetracker.data.database.entity.UpdateAccountBalance
 import com.fontaipi.expensetracker.data.database.entity.asExternalModel
@@ -20,8 +20,17 @@ class TransactionRepositoryImpl @Inject constructor(
     private val walletDao: WalletDao,
     private val transactionDao: TransactionDao,
 ) : TransactionRepository {
-    override fun getTransactions(limit: Int?): Flow<List<Transaction>> {
-        return transactionDao.getTransactions(limit ?: Int.MAX_VALUE).map { transactions ->
+
+    override fun getTransactions(): Flow<List<Transaction>> {
+        return transactionDao.getTransactions().map { transactions ->
+            transactions.map { transaction ->
+                transaction.asExternalModel()
+            }
+        }
+    }
+
+    override fun getTransactions(limit: Int): Flow<List<Transaction>> {
+        return transactionDao.getTransactions(limit).map { transactions ->
             transactions.map { transaction ->
                 transaction.asExternalModel()
             }

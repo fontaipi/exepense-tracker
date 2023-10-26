@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.fontaipi.expensetracker.model.Wallet
 import java.math.BigDecimal
+import javax.annotation.concurrent.Immutable
 
 val sampleMainAccount = WalletEntity(
     name = "Main account",
@@ -20,6 +21,7 @@ val sampleSavingAccount = WalletEntity(
     colors = WalletColors.Type2
 )
 
+@Immutable
 enum class WalletColors(val primary: Color, val secondary: Color) {
     Type1(Color(0xFFE57373), Color(0xFFEF9A9A)),
     Type2(Color(0xFFF06292), Color(0xFFF48FB1)),

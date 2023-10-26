@@ -86,6 +86,7 @@ fun HomeRoute(
     navigateToAddTransaction: () -> Unit,
     navigateToWallets: () -> Unit,
     navigateToAnalytics: () -> Unit,
+    navigateToTransactions: () -> Unit,
 ) {
     val homePageState by viewModel.homePageState.collectAsStateWithLifecycle()
     val transactionsState by viewModel.transactionState.collectAsStateWithLifecycle()
@@ -96,6 +97,7 @@ fun HomeRoute(
         navigateToAddTransaction = navigateToAddTransaction,
         navigateToWallets = navigateToWallets,
         navigateToAnalytics = navigateToAnalytics,
+        navigateToTransactions = navigateToTransactions
     )
 }
 
@@ -106,7 +108,8 @@ fun HomeScreen(
     updateScaffoldViewState: (ScaffoldViewState) -> Unit,
     navigateToAddTransaction: () -> Unit,
     navigateToWallets: () -> Unit,
-    navigateToAnalytics: () -> Unit
+    navigateToAnalytics: () -> Unit,
+    navigateToTransactions: () -> Unit,
 ) {
     val scrollingState = rememberScrollState()
     LaunchedEffect(homePageState) {
@@ -152,7 +155,10 @@ fun HomeScreen(
                         )
                     }
                     item {
-                        AllTransactions(categoryTotalTransactions = homePageState.categoryTotalTransaction)
+                        AllTransactions(
+                            categoryTotalTransactions = homePageState.categoryTotalTransaction,
+                            onClick = navigateToTransactions
+                        )
                     }
                     item {
                         Debts()
@@ -191,7 +197,7 @@ fun HomeScreen(
                 SectionTitleWithButton(
                     title = "Transactions",
                     buttonText = "See all",
-                    onButtonClick = {})
+                    onButtonClick = navigateToTransactions)
                 when (transactionsState) {
                     is TransactionsState.Success -> {
                         val date by remember {

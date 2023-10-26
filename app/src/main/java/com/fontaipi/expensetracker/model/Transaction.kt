@@ -6,7 +6,7 @@ import java.math.BigDecimal
 import java.time.Instant
 
 
-data class Transaction constructor(
+data class Transaction (
     val id: Long = 0,
     val category: Category,
     val hashtags: Set<String> = emptySet(),

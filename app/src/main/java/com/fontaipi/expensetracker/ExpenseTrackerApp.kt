@@ -38,6 +38,7 @@ import com.fontaipi.expensetracker.ui.page.add.transaction.AddTransactionRoute
 import com.fontaipi.expensetracker.ui.page.add.wallet.AddWalletRoute
 import com.fontaipi.expensetracker.ui.page.home.HomeRoute
 import com.fontaipi.expensetracker.ui.page.settings.SettingsRoute
+import com.fontaipi.expensetracker.ui.page.transactions.TransactionsRoute
 import com.fontaipi.expensetracker.ui.page.wallets.WalletsRoute
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,13 +108,24 @@ fun ExpenseTrackerApp() {
                     },
                     navigateToAnalytics = {
                         mainBottomNavController.navigate(TopLevelDestination.ANALYTICS.name)
-                    }
+                    },
+                    navigateToTransactions = {
+                        navController.navigate("transactions")
+                    },
                 )
             }
         }
 
         animatedComposableVariant("settings") {
             SettingsRoute(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        animatedComposableVariant("transactions") {
+            TransactionsRoute(
                 onBackClick = {
                     navController.popBackStack()
                 }
@@ -157,6 +169,7 @@ fun MainBottomNav(
     navigateToAddTransaction: () -> Unit,
     navigateToWallets: () -> Unit,
     navigateToAnalytics: () -> Unit,
+    navigateToTransactions: () -> Unit,
 ) {
     NavHost(
         modifier = modifier,
@@ -168,7 +181,8 @@ fun MainBottomNav(
                 updateScaffoldViewState = updateScaffoldViewState,
                 navigateToAddTransaction = navigateToAddTransaction,
                 navigateToWallets = navigateToWallets,
-                navigateToAnalytics = navigateToAnalytics
+                navigateToAnalytics = navigateToAnalytics,
+                navigateToTransactions = navigateToTransactions,
             )
         }
 

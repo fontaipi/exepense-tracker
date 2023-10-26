@@ -128,6 +128,7 @@ val sampleTransactionsPerCategories = listOf(
 @Composable
 fun AllTransactions(
     categoryTotalTransactions: List<CategoryTotalTransaction>,
+    onClick: () -> Unit = {}
 ) {
     val month = LocalDateTime.now().month.name
     var animationPlayed by remember { mutableStateOf(false) }
@@ -141,9 +142,9 @@ fun AllTransactions(
         modifier = Modifier.height(96.dp),
         title = "All transactions",
         subtitle = "$total€ spent in ${
-            SimpleDateFormat("MMMM", Locale.getDefault()).format(Date())
+            SimpleDateFormat("MMMM", Locale.ENGLISH).format(Date())
         }",
-        onClick = {}
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier.clip(MaterialTheme.shapes.extraSmall)
