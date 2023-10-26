@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.NoCell
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,9 +29,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fontaipi.expensetracker.data.database.entity.WalletColors
-import com.fontaipi.expensetracker.model.Wallet
 import com.fontaipi.expensetracker.model.Category
 import com.fontaipi.expensetracker.model.CategoryTotalTransaction
+import com.fontaipi.expensetracker.model.Wallet
+import com.fontaipi.expensetracker.model.categoryIconMap
 import com.fontaipi.expensetracker.ui.page.add.transaction.sampleCategories
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
 import java.math.BigDecimal
@@ -181,11 +184,12 @@ fun Debts() {
 @Composable
 fun TopCategories(
     transactionsPerCategories: List<CategoryTotalTransaction>,
+    onClick: () -> Unit
 ) {
     QuickAction(
         modifier = Modifier.height(208.dp),
         title = "Top categories",
-        onClick = {}
+        onClick = onClick
     ) {
         Column(
             modifier = Modifier.weight(1f),
@@ -198,7 +202,8 @@ fun TopCategories(
                 ) {
                     CategoryBox(
                         modifier = Modifier.padding(end = 4.dp),
-                        category = category.category,
+                        icon = categoryIconMap[category.category.icon] ?: Icons.Default.NoCell,
+                        containerColor = category.category.color,
                     )
                     Column(
                         modifier = Modifier.weight(1f)
@@ -264,7 +269,10 @@ fun DebtsPreview() {
 @Composable
 fun TopCategoriesPreview() {
     ExpenseTrackerTheme {
-        TopCategories(listOf())
+        TopCategories(
+            transactionsPerCategories = listOf(),
+            onClick = {}
+        )
     }
 }
 
@@ -297,7 +305,10 @@ fun QuickActionGridPreview() {
                 Debts()
             }
             item {
-                TopCategories(listOf())
+                TopCategories(
+                    transactionsPerCategories = listOf(),
+                    onClick = {}
+                )
             }
             item {
                 Subscriptions()

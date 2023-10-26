@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.CallMade
 import androidx.compose.material.icons.automirrored.filled.CallReceived
 import androidx.compose.material.icons.automirrored.rounded.CompareArrows
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.NoCell
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
@@ -62,24 +63,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.fontaipi.expensetracker.data.database.entity.TransactionEntity
 import com.fontaipi.expensetracker.model.Category
 import com.fontaipi.expensetracker.model.CategoryIcon
 import com.fontaipi.expensetracker.model.Wallet
+import com.fontaipi.expensetracker.model.categoryIconMap
 import com.fontaipi.expensetracker.ui.component.CategoryBox
 import com.fontaipi.expensetracker.ui.component.SectionTitle
+import com.fontaipi.expensetracker.ui.component.SelectCategoryCard
+import com.fontaipi.expensetracker.ui.component.SelectWalletCard
 import com.fontaipi.expensetracker.ui.component.TimePickerDialog
 import com.fontaipi.expensetracker.ui.component.WalletIcon
 import com.fontaipi.expensetracker.ui.theme.CategoryBlue
@@ -123,11 +122,7 @@ enum class TransactionType(val title: String, val icon: ImageVector) {
     TRANSFER(
         icon = Icons.AutoMirrored.Rounded.CompareArrows,
         title = "Transfer"
-    ),
-//    DEBT(
-//        icon = Icons.Rounded.RestartAlt,
-//        title = "Debt"
-//    ),
+    )
 }
 
 
@@ -230,7 +225,12 @@ fun AddTransactionScreen(
                             onCloseClick = onCloseClick
                         )
 
-                        1 -> Text("Income")
+                        1 -> Income(
+                            wallets = addTransactionState.wallets,
+                            addTransaction = addTransaction,
+                            onCloseClick = onCloseClick
+                        )
+
                         2 -> Text("Transfer")
                     }
                 }
@@ -263,8 +263,8 @@ fun Expense(
 
     var amount by remember { mutableStateOf("") }
     var selectedCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var selectedAccountId by rememberSaveable { mutableStateOf(wallets.firstOrNull()?.id) }
-    val selectedAccount by remember { derivedStateOf { wallets.firstOrNull { it.id == selectedAccountId } } }
+    var selectedWalletId by rememberSaveable { mutableStateOf(wallets.firstOrNull()?.id) }
+    val selectedWallet by remember { derivedStateOf { wallets.firstOrNull { it.id == selectedWalletId } } }
 
     val datePickerState =
         rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
@@ -336,88 +336,17 @@ fun Expense(
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(96.dp),
-                onClick = { showCategoryBottomSheet = true },
-                shape = MaterialTheme.shapes.small,
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row {
-                        Text(
-                            "Choose category",
-                            style = MaterialTheme.typography.titleMedium.copy(lineHeight = 18.sp),
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        if (selectedCategoryId == null) {
-                            val stroke = Stroke(
-                                width = 4f,
-                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                            )
-                            val strokeColor = MaterialTheme.colorScheme.onSurface
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .drawBehind {
-                                        drawRoundRect(
-                                            color = strokeColor,
-                                            style = stroke,
-                                            cornerRadius = CornerRadius(10.dp.toPx())
-                                        )
-                                    }
-                            )
-                        } else {
-                            CategoryBox(
-                                category = categories.first { it.id == selectedCategoryId },
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
+            SelectCategoryCard(
+                modifier = Modifier.weight(1f),
+                selectedCategory = categories.firstOrNull { it.id == selectedCategoryId },
+                onClick = { showCategoryBottomSheet = true }
+            )
 
-                    }
-                    Text(
-                        "Tap to select",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.outline
-                    )
-                }
-            }
-
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(96.dp),
-                onClick = { showAccountBottomSheet = true },
-                shape = MaterialTheme.shapes.small,
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Row {
-                        Text(
-                            selectedAccount?.name ?: "Choose wallet",
-                            style = MaterialTheme.typography.titleMedium.copy(lineHeight = 18.sp),
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        if (selectedAccount != null) {
-                            WalletIcon(
-                                walletColors = selectedAccount!!.colors,
-                            )
-                        }
-                    }
-                    Text(
-                        "Tap to select",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.outline
-                    )
-                }
-            }
+            SelectWalletCard(
+                modifier = Modifier.weight(1f),
+                selectedWallet = selectedWallet,
+                onClick = { showAccountBottomSheet = true }
+            )
         }
 
         Column {
@@ -463,14 +392,14 @@ fun Expense(
 
         }
         FilledTonalButton(
-            enabled = amount.isNotEmpty() && selectedCategoryId != null && selectedAccountId != null,
+            enabled = amount.isNotEmpty() && selectedCategoryId != null && selectedWalletId != null,
             onClick = {
                 addTransaction(
                     TransactionEntity(
                         amount = amount.toFloat().toBigDecimal(),
                         type = TransactionType.EXPENSE,
                         categoryId = selectedCategoryId!!,
-                        accountId = selectedAccountId!!,
+                        accountId = selectedWalletId!!,
                         date = selectedDate
                     )
                 )
@@ -498,7 +427,205 @@ fun Expense(
     if (showAccountBottomSheet) {
         SelectAccountBottomSheet(
             wallets = wallets,
-            onCategoryClick = { selectedAccountId = it },
+            onCategoryClick = { selectedWalletId = it },
+            onDismissRequest = {
+                showAccountBottomSheet = false
+            }
+        )
+    }
+
+    if (showDatePicker) {
+        val confirmEnabled by remember { derivedStateOf { datePickerState.selectedDateMillis != null } }
+        DatePickerDialog(
+            onDismissRequest = {
+                showDatePicker = false
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDatePicker = false
+                        showTimePicker = true
+                    },
+                    enabled = confirmEnabled
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        TimePickerDialog(
+            onCancel = {
+                showTimePicker = false
+            },
+            onConfirm = {
+                showTimePicker = false
+            },
+        ) {
+            TimePicker(state = timePickerState)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Income(
+    wallets: List<Wallet>,
+    addTransaction: (TransactionEntity) -> Unit,
+    onCloseClick: () -> Unit
+) {
+    var showAccountBottomSheet by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    var amount by remember { mutableStateOf("") }
+    var selectedWalletId by rememberSaveable { mutableStateOf(wallets.firstOrNull()?.id) }
+    val selectedWallet by remember { derivedStateOf { wallets.firstOrNull { it.id == selectedWalletId } } }
+
+    val datePickerState =
+        rememberDatePickerState(initialSelectedDateMillis = System.currentTimeMillis())
+    val timePickerState = rememberTimePickerState(
+        initialHour = Instant.now().atZone(ZoneId.systemDefault()).hour,
+        initialMinute = Instant.now().atZone(ZoneId.systemDefault()).minute
+    )
+
+    val selectedDate by remember {
+        derivedStateOf {
+            val selectedDate = Instant.ofEpochMilli(
+                datePickerState.selectedDateMillis ?: System.currentTimeMillis()
+            ).atZone(ZoneId.systemDefault()).toLocalDate()
+            val combinedDateTime = LocalDateTime.of(
+                selectedDate.year,
+                selectedDate.month,
+                selectedDate.dayOfMonth,
+                timePickerState.hour,
+                timePickerState.minute
+            )
+            combinedDateTime.atZone(ZoneId.systemDefault()).toInstant()
+        }
+    }
+
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            OutlinedTextField(
+                modifier = Modifier.weight(1f),
+                prefix = { Text(text = "+") },
+                shape = MaterialTheme.shapes.small,
+                value = amount,
+                onValueChange = { amount = it },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                placeholder = {
+                    Text(
+                        text = "100.00",
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color.Transparent,
+                )
+            )
+
+            Surface(
+                onClick = {},
+                color = MaterialTheme.colorScheme.surface,
+                shape = MaterialTheme.shapes.small,
+            ) {
+                Box(
+                    modifier = Modifier.size(56.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(text = "EUR", style = MaterialTheme.typography.labelLarge)
+                }
+            }
+        }
+
+
+        SelectWalletCard(
+            modifier = Modifier.fillMaxWidth(0.5f),
+            selectedWallet = selectedWallet,
+            onClick = { showAccountBottomSheet = true }
+        )
+
+        Column {
+            SectionTitle(title = "Additional information")
+            Column {
+                InfoWithLabel(
+                    label = "Date",
+                    info = {
+                        Text(
+                            text = if (datePickerState.selectedDateMillis != null) convertMillisToDate(
+                                selectedDate.toEpochMilli()
+                            ) else "Not set", style = MaterialTheme.typography.labelLarge
+                        )
+                    },
+                    onClick = { showDatePicker = true }
+                )
+                InfoWithLabel(
+                    label = "Labels",
+                    info = {
+                        Text(
+                            text = "Not specified",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    },
+                    onClick = {}
+                )
+                InfoWithLabel(
+                    label = "Commentary",
+                    info = { Text(text = "None", style = MaterialTheme.typography.labelLarge) },
+                    onClick = {}
+                )
+            }
+
+        }
+        FilledTonalButton(
+            enabled = amount.isNotEmpty() && selectedWalletId != null,
+            onClick = {
+                addTransaction(
+                    TransactionEntity(
+                        amount = amount.toFloat().toBigDecimal(),
+                        type = TransactionType.INCOME,
+                        categoryId = 1,
+                        accountId = selectedWalletId!!,
+                        date = selectedDate
+                    )
+                )
+                onCloseClick()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = null)
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(text = "Add transaction", style = MaterialTheme.typography.labelLarge)
+        }
+    }
+
+    if (showAccountBottomSheet) {
+        SelectAccountBottomSheet(
+            wallets = wallets,
+            onCategoryClick = { selectedWalletId = it },
             onDismissRequest = {
                 showAccountBottomSheet = false
             }
@@ -656,7 +783,10 @@ fun CategoryCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        CategoryBox(category = category)
+        CategoryBox(
+            icon = categoryIconMap[category.icon] ?: Icons.Default.NoCell,
+            containerColor = category.color,
+        )
         Text(
             text = category.name,
             style = MaterialTheme.typography.labelLarge,

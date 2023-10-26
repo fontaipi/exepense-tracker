@@ -10,30 +10,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.fontaipi.expensetracker.model.Category
-import com.fontaipi.expensetracker.model.categoryIconMap
 
 @Composable
 fun CategoryBox(
     modifier: Modifier = Modifier,
-    category: Category,
+    icon: ImageVector,
+    containerColor: Color,
+    //category: Category,
 ) {
     Box(
         modifier = modifier
             .size(36.dp)
             .clip(MaterialTheme.shapes.extraSmall)
-            .background(category.color),
+            .background(containerColor),
         contentAlignment = Alignment.Center,
     ) {
-        categoryIconMap[category.icon]?.let {
-            Icon(
-                imageVector = it,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = Color.White,
-            )
-        }
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = Color.White,
+        )
+//        categoryIconMap[category.icon]?.let {
+//            Icon(
+//                imageVector = it,
+//                contentDescription = null,
+//                modifier = Modifier.size(18.dp),
+//                tint = Color.White,
+//            )
+//        }
     }
 }
 

@@ -4,11 +4,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DonutSmall
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Savings
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.DonutSmall
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Savings
-import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class TopLevelDestination(
@@ -34,11 +32,5 @@ enum class TopLevelDestination(
         unselectedIcon = Icons.Outlined.Savings,
         iconText = "Budgets",
         titleText = "Budgets",
-    ),
-    SETTINGS(
-        selectedIcon = Icons.Rounded.Settings,
-        unselectedIcon = Icons.Outlined.Settings,
-        iconText = "Settings",
-        titleText = "Settings",
     )
 }

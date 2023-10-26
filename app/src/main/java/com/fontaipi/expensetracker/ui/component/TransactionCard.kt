@@ -20,24 +20,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.fontaipi.expensetracker.data.database.entity.WalletColors
-import com.fontaipi.expensetracker.model.Category
-import com.fontaipi.expensetracker.model.CategoryIcon
 import com.fontaipi.expensetracker.model.Wallet
-import com.fontaipi.expensetracker.ui.theme.CategoryRed
 import com.fontaipi.expensetracker.ui.theme.ExpenseTrackerTheme
 import java.math.BigDecimal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionCard(
-    category: Category = Category(
-        name = "Groceries",
-        color = CategoryRed,
-        icon = CategoryIcon.GROCERIES,
-    ),
+    icon: ImageVector,
+    containerColor: Color,
+    text: String,
+//    category: Category = Category(
+//        name = "Groceries",
+//        color = CategoryRed,
+//        icon = CategoryIcon.GROCERIES,
+//    ),
     hashtags: Set<String> = setOf("starbucks", "flatwhite"),
     price: String = "3,50€",
     wallet: Wallet = Wallet(
@@ -67,9 +69,12 @@ fun TransactionCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                CategoryBox(category = category)
+                CategoryBox(
+                    icon = icon,
+                    containerColor = containerColor,
+                )
                 Column {
-                    Text(text = category.name, style = MaterialTheme.typography.titleMedium)
+                    Text(text = text, style = MaterialTheme.typography.titleMedium)
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
@@ -114,6 +119,6 @@ fun TransactionCard(
 @Composable
 fun TransactionCardPreview() {
     ExpenseTrackerTheme {
-        TransactionCard()
+        //TransactionCard()
     }
 }

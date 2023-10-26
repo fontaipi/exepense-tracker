@@ -10,6 +10,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -31,6 +32,7 @@ import javax.inject.Inject
 data class ScaffoldViewState(
     val topAppBarTitle: String? = null,
     val onFabClick: (() -> Unit)? = null,
+    val fabIcon: ImageVector? = null,
 )
 
 @AndroidEntryPoint

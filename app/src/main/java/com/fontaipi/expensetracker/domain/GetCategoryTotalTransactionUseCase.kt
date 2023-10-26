@@ -14,13 +14,14 @@ class GetCategoryTotalTransactionUseCase @Inject constructor(
     operator fun invoke(monthValue: Int, year: Int): Flow<List<CategoryTotalTransaction>> {
         Log.d("GetCategoryTotalTransactionUseCase", "invoke")
         return transactionRepository.getTransactionForMonth(monthValue, year).map { transactions ->
-            transactions.groupBy { it.category }.map { (category, transactions) ->
-                CategoryTotalTransaction(
-                    category = category,
-                    total = transactions.filter { it.type == TransactionType.EXPENSE }
-                        .sumOf { it.amount }
-                )
-            }.sortedByDescending { it.total }
+            transactions.filter { it.type == TransactionType.EXPENSE }.groupBy { it.category }
+                .map { (category, transactions) ->
+                    CategoryTotalTransaction(
+                        category = category,
+                        total = transactions.filter { it.type == TransactionType.EXPENSE }
+                            .sumOf { it.amount }
+                    )
+                }.sortedByDescending { it.total }
         }
     }
 }

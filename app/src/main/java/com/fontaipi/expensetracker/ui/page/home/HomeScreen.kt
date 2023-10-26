@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.NoCell
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,6 +28,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fontaipi.expensetracker.R
 import com.fontaipi.expensetracker.ScaffoldViewState
 import com.fontaipi.expensetracker.model.Transaction
+import com.fontaipi.expensetracker.model.categoryIconMap
 import com.fontaipi.expensetracker.ui.component.AllTransactions
 import com.fontaipi.expensetracker.ui.component.Debts
 import com.fontaipi.expensetracker.ui.component.MyWallet
@@ -80,6 +85,7 @@ fun HomeRoute(
     updateScaffoldViewState: (ScaffoldViewState) -> Unit,
     navigateToAddTransaction: () -> Unit,
     navigateToWallets: () -> Unit,
+    navigateToAnalytics: () -> Unit,
 ) {
     val homePageState by viewModel.homePageState.collectAsStateWithLifecycle()
     val transactionsState by viewModel.transactionState.collectAsStateWithLifecycle()
@@ -89,6 +95,7 @@ fun HomeRoute(
         updateScaffoldViewState = updateScaffoldViewState,
         navigateToAddTransaction = navigateToAddTransaction,
         navigateToWallets = navigateToWallets,
+        navigateToAnalytics = navigateToAnalytics,
     )
 }
 
@@ -99,13 +106,13 @@ fun HomeScreen(
     updateScaffoldViewState: (ScaffoldViewState) -> Unit,
     navigateToAddTransaction: () -> Unit,
     navigateToWallets: () -> Unit,
+    navigateToAnalytics: () -> Unit
 ) {
-    val accountsTotal = shouldShowWalletsTotal(homePageState)
     val scrollingState = rememberScrollState()
     LaunchedEffect(homePageState) {
         updateScaffoldViewState(
             ScaffoldViewState(
-                topAppBarTitle = "$accountsTotal€",
+                topAppBarTitle = "Home",
                 onFabClick = navigateToAddTransaction,
             )
         )
@@ -119,6 +126,17 @@ fun HomeScreen(
     ) {
         when (homePageState) {
             is HomePageState.Success -> {
+                val totalBalance by remember { derivedStateOf { homePageState.wallets.sumOf { it.balance } } }
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                ) {
+                    Text(
+                        "Total balance :",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                    Text(text = "$totalBalance €", style = MaterialTheme.typography.headlineSmall)
+                }
                 LazyVerticalStaggeredGrid(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
@@ -140,7 +158,10 @@ fun HomeScreen(
                         Debts()
                     }
                     item {
-                        TopCategories(transactionsPerCategories = homePageState.categoryTotalTransaction)
+                        TopCategories(
+                            transactionsPerCategories = homePageState.categoryTotalTransaction,
+                            onClick = navigateToAnalytics,
+                        )
                     }
                     item {
                         Subscriptions()
@@ -255,15 +276,36 @@ fun Transactions(
     ) {
         if (transactions.isNotEmpty()) {
             transactions.forEach { transaction ->
-                val sign = when (transaction.type) {
-                    TransactionType.EXPENSE -> "-"
-                    TransactionType.INCOME -> "+"
-                    else -> ""
+                val transactionData = when (transaction.type) {
+                    TransactionType.EXPENSE -> {
+                        TransactionData(
+                            icon = categoryIconMap[transaction.category.icon]
+                                ?: Icons.Default.NoCell,
+                            containerColor = transaction.category.color,
+                            text = transaction.category.name,
+                            amount = "- ${transaction.amount}€",
+                        )
+                    }
+
+                    TransactionType.INCOME -> {
+                        TransactionData(
+                            icon = TransactionType.INCOME.icon,
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            text = TransactionType.INCOME.title,
+                            amount = "+ ${transaction.amount}€",
+                        )
+                    }
+
+                    TransactionType.TRANSFER -> TODO()
                 }
+
+
                 TransactionCard(
-                    category = transaction.category,
+                    icon = transactionData.icon,
+                    containerColor = transactionData.containerColor,
+                    text = transactionData.text,
                     hashtags = transaction.hashtags,
-                    price = "$sign ${transaction.amount}€",
+                    price = transactionData.amount,
                     wallet = transaction.wallet,
                 )
             }
@@ -275,6 +317,13 @@ fun Transactions(
         }
     }
 }
+
+data class TransactionData(
+    val icon: ImageVector,
+    val containerColor: Color,
+    val text: String,
+    val amount: String,
+)
 
 @Composable
 fun TransactionsEmpty(

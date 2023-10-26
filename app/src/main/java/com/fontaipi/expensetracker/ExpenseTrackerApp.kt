@@ -1,13 +1,13 @@
 package com.fontaipi.expensetracker
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -16,12 +16,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,7 +32,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.fontaipi.expensetracker.ui.component.BottomAppBar
 import com.fontaipi.expensetracker.ui.component.TopAppBar
-import com.fontaipi.expensetracker.ui.component.animatedComposable
 import com.fontaipi.expensetracker.ui.component.animatedComposableVariant
 import com.fontaipi.expensetracker.ui.component.slideInVerticallyComposable
 import com.fontaipi.expensetracker.ui.page.add.transaction.AddTransactionRoute
@@ -50,31 +52,21 @@ fun ExpenseTrackerApp() {
                 topBar = {
                     TopAppBar(
                         title = {
-                            if (scaffoldViewState.topAppBarTitle != null) {
-                                Text(
-                                    text = scaffoldViewState.topAppBarTitle!!,
-                                )
-                            } else {
-                                Column {
-                                    Text(
-                                        text = "Total balance",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.outline
-                                    )
-                                    Text(text = "4 307, 00€")
-                                }
+                            scaffoldViewState.topAppBarTitle?.let {
+                                Text(text = it)
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
                             containerColor = Color.Transparent,
                         ),
-                        navigationIcon = Icons.Default.Person,
-                        navigationIconContentDescription = "Menu",
-                        actionIcon = Icons.Default.Search,
-                        actionIconContentDescription = "Add",
+                        navigationIcon = Icons.Rounded.Search,
+                        navigationIconContentDescription = "search",
+                        actionIcon = Icons.Rounded.Settings,
+                        actionIconContentDescription = "settings",
                         onNavigationClick = {
                         },
                         onActionClick = {
+                            navController.navigate("settings")
                         }
                     )
                 },
@@ -112,10 +104,22 @@ fun ExpenseTrackerApp() {
                     },
                     navigateToWallets = {
                         navController.navigate("wallets")
+                    },
+                    navigateToAnalytics = {
+                        mainBottomNavController.navigate(TopLevelDestination.ANALYTICS.name)
                     }
                 )
             }
         }
+
+        animatedComposableVariant("settings") {
+            SettingsRoute(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         slideInVerticallyComposable("addTransaction") {
             AddTransactionRoute(
                 onCloseClick = {
@@ -152,34 +156,58 @@ fun MainBottomNav(
     updateScaffoldViewState: (ScaffoldViewState) -> Unit,
     navigateToAddTransaction: () -> Unit,
     navigateToWallets: () -> Unit,
+    navigateToAnalytics: () -> Unit,
 ) {
     NavHost(
         modifier = modifier,
         navController = navController,
         startDestination = TopLevelDestination.HOME.name
     ) {
-        animatedComposable(TopLevelDestination.HOME.name) {
+        composable(TopLevelDestination.HOME.name) {
             HomeRoute(
                 updateScaffoldViewState = updateScaffoldViewState,
                 navigateToAddTransaction = navigateToAddTransaction,
-                navigateToWallets = navigateToWallets
+                navigateToWallets = navigateToWallets,
+                navigateToAnalytics = navigateToAnalytics
             )
         }
 
         composable(TopLevelDestination.ANALYTICS.name) {
-            Column {
-                Text("Analytics")
+            LaunchedEffect(Unit) {
+                updateScaffoldViewState(
+                    ScaffoldViewState(
+                        topAppBarTitle = "Analytics",
+                        onFabClick = null
+                    )
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Not implemented yet", style = MaterialTheme.typography.titleMedium)
             }
         }
 
         composable(TopLevelDestination.BUDGETS.name) {
-            Column {
-                Text("Budgets")
+            LaunchedEffect(Unit) {
+                updateScaffoldViewState(
+                    ScaffoldViewState(
+                        topAppBarTitle = "Budgets",
+                        onFabClick = null
+                    )
+                )
             }
-        }
-
-        composable(TopLevelDestination.SETTINGS.name) {
-            SettingsRoute(updateScaffoldViewState = updateScaffoldViewState)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Not implemented yet", style = MaterialTheme.typography.titleMedium)
+            }
         }
     }
 }

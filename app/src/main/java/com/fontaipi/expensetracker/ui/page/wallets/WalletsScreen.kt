@@ -123,8 +123,9 @@ fun WalletsScreen(
                             rememberPagerState(pageCount = { accountsState.wallets.size })
 
                         LaunchedEffect(pagerState.currentPage) {
-                            val selectedAccount = accountsState.wallets[pagerState.currentPage]
-                            selectAccount(selectedAccount.id)
+                            val selectedAccount =
+                                accountsState.wallets.getOrNull(pagerState.currentPage)
+                            selectedAccount?.let { selectAccount(it.id) }
                         }
 
                         Column(
@@ -163,36 +164,6 @@ fun WalletsScreen(
                 }
 
             }
-
-//            item {
-//                Column(
-//                    verticalArrangement = Arrangement.spacedBy(16.dp),
-//                ) {
-//                    Column(
-//                        modifier = Modifier.padding(horizontal = 16.dp),
-//                        verticalArrangement = Arrangement.spacedBy(8.dp)
-//                    ) {
-//                        SectionTitle(title = "Transactions")
-//                        when (transactionsState) {
-//                            is TransactionsState.Success -> {
-//                                Transactions(
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    transactions = transactionsState.transactions
-//                                )
-//                            }
-//
-//                            TransactionsState.Loading -> {
-//                                Box(
-//                                    modifier = Modifier.fillMaxSize(),
-//                                    contentAlignment = Alignment.Center
-//                                ) {
-//                                    CircularProgressIndicator()
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
 
             item {
                 SectionTitle(
